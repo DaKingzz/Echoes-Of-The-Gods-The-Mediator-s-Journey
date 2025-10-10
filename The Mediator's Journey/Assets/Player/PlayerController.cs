@@ -5,7 +5,8 @@ public class PlayerController : MonoBehaviour
 {
     public Transform groundCheck;
     public LayerMask groundLayer;
-    private Rigidbody2D  rigidBody2D;
+    private Rigidbody2D rigidBody2D;
+    private Animator animator;
 
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float jumpHeight = 5f;
@@ -20,17 +21,28 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-    if (horizontalInput > 0 && !isFacingRight)
+        if (horizontalInput > 0 && !isFacingRight)
         {
             Flip();
         }
         else if (horizontalInput < 0 && isFacingRight)
         {
             Flip();
+        }
+
+        Debug.Log("Horizontal Input: " + horizontalInput);
+        if (horizontalInput != 0)
+        {
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
         }
     }
     
