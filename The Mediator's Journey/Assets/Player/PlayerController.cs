@@ -5,26 +5,27 @@ public class PlayerController : MonoBehaviour
 {
     public Transform groundCheck;
     public LayerMask groundLayer;
-    private Rigidbody2D  rigidBody2D;
+    private Rigidbody2D rigidBody2D;
+    private Animator animator;
 
     [SerializeField] private float movementSpeed = 5f;
-    [SerializeField] private float jumpHeight = 5f;
-    // This value would later be changed by the gravity god mood swings
-    [SerializeField] private float gravityValue = -9.8f;
+    [SerializeField] private float jumpPower = 10f;
 
     private float horizontalInput;
     private bool isFacingRight = true;
+    private bool jumpRequested = false;
 
 
     // Start is called before the first frame update
     void Start()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-    if (horizontalInput > 0 && !isFacingRight)
+        if (horizontalInput > 0 && !isFacingRight)
         {
             Flip();
         }
@@ -32,11 +33,33 @@ public class PlayerController : MonoBehaviour
         {
             Flip();
         }
+
+        if (horizontalInput != 0)
+        {
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
     }
     
     void FixedUpdate()
     {
-        rigidBody2D.velocity = new Vector2(horizontalInput * movementSpeed, rigidBody2D.velocity.y);
+        Vector2 currentVelocity = rigidBody2D.velocity;
+
+        float timeScale = TimeController.Instance.TimeScale;
+        currentVelocity.x = horizontalInput * movementSpeed * timeScale;
+
+        float fixedStep = Time.fixedDeltaTime;
+        currentVelocity.y += GravityController.Instance.Gravity * fixedStep;
+
+        if (jumpRequested && IsGrounded()) {
+            currentVelocity.y = jumpPower * timeScale;
+            jumpRequested = false;
+        }
+
+        rigidBody2D.velocity = currentVelocity;
     }
 
 
@@ -50,7 +73,7 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed && IsGrounded())
         {
-            rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, jumpHeight);
+            jumpRequested = true;
         }
     }
 
