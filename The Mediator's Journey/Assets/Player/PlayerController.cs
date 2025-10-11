@@ -10,8 +10,6 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float movementSpeed = 5f;
     [SerializeField] private float jumpHeight = 5f;
-    // This value would later be changed by the gravity god mood swings
-    [SerializeField] private float gravityValue = -9.8f;
 
     private float horizontalInput;
     private bool isFacingRight = true;
@@ -35,7 +33,6 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
 
-        Debug.Log("Horizontal Input: " + horizontalInput);
         if (horizontalInput != 0)
         {
             animator.SetBool("isWalking", true);
@@ -48,7 +45,7 @@ public class PlayerController : MonoBehaviour
     
     void FixedUpdate()
     {
-        rigidBody2D.velocity = new Vector2(horizontalInput * movementSpeed, rigidBody2D.velocity.y);
+        rigidBody2D.velocity = new Vector2(horizontalInput * movementSpeed * TimeController.Instance.TimeScale, rigidBody2D.velocity.y);
     }
 
 
