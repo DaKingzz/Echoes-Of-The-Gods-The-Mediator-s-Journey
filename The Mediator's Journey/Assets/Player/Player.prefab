@@ -231,9 +231,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  moveSpeed: 5
-  jumpSpeed: 5
-  gravityValue: -9.8
+  movementSpeed: 5
+  jumpHeight: 8
 --- !u!95 &-933271739459964310
 Animator:
   serializedVersion: 5

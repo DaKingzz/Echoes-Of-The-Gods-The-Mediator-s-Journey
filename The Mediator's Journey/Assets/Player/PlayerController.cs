@@ -9,10 +9,11 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
 
     [SerializeField] private float movementSpeed = 5f;
-    [SerializeField] private float jumpHeight = 5f;
+    [SerializeField] private float jumpPower = 5f;
 
     private float horizontalInput;
     private bool isFacingRight = true;
+    private bool jumpRequested = false;
 
 
     // Start is called before the first frame update
@@ -45,7 +46,20 @@ public class PlayerController : MonoBehaviour
     
     void FixedUpdate()
     {
-        rigidBody2D.velocity = new Vector2(horizontalInput * movementSpeed * TimeController.Instance.TimeScale, rigidBody2D.velocity.y);
+        Vector2 currentVelocity = rigidBody2D.velocity;
+
+        float timeScale = TimeController.Instance.TimeScale;
+        currentVelocity.x = horizontalInput * movementSpeed * timeScale;
+
+        float fixedStep = Time.fixedDeltaTime;
+        currentVelocity.y += GravityController.Instance.Gravity * fixedStep;
+
+        if (jumpRequested && IsGrounded()) {
+            currentVelocity.y = jumpPower * timeScale;
+            jumpRequested = false;
+        }
+
+        rigidBody2D.velocity = currentVelocity;
     }
 
 
@@ -59,7 +73,7 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed && IsGrounded())
         {
-            rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, jumpHeight);
+            jumpRequested = true;
         }
     }
 
