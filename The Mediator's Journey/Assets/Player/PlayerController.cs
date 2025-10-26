@@ -51,11 +51,8 @@ public class PlayerController : MonoBehaviour
         float timeScale = TimeController.Instance.TimeScale;
         currentVelocity.x = horizontalInput * movementSpeed * timeScale;
 
-        float fixedStep = Time.fixedDeltaTime;
-        currentVelocity.y += GravityController.Instance.Gravity * fixedStep;
-
         if (jumpRequested && IsGrounded()) {
-            currentVelocity.y = jumpPower * timeScale;
+            currentVelocity.y = jumpPower;
             jumpRequested = false;
         }
 
