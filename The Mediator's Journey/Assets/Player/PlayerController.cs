@@ -1,128 +1,288 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(CapsuleCollider2D))]
 public class PlayerController : MonoBehaviour
 {
-    public Transform groundCheck;
-    public LayerMask groundLayer;
+    [SerializeField] private ScriptableStats stats;
+
     private Rigidbody2D rigidBody2D;
+    private CapsuleCollider2D capsuleCollider2D;
     private Animator animator;
 
-    [SerializeField] private float movementSpeed = 5f;
-    [SerializeField] private float jumpPower = 6f;
+    private FrameInput frameInput;
+    private Vector2 frameVelocity;
 
-    private float horizontalInput;
+    private bool cachedQueryStartInColliders;
+    private float time;
+
+    // Grounding state
+    private float frameLeftGrounded = float.MinValue;
+    private bool grounded;
+
+    // Jump state
+    private bool jumpToConsume;
+    private bool bufferedJumpUsable;
+    private bool endedJumpEarly;
+    private bool coyoteUsable;
+    private float timeJumpWasPressed;
+
+    // Facing direction
     private bool isFacingRight = true;
-    private bool jumpRequested = false;
 
-    void Start()
+    private void Awake()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
+        capsuleCollider2D = GetComponent<CapsuleCollider2D>();
         animator = GetComponent<Animator>();
+
+        cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
     }
 
-    void Update()
+    private void Update()
     {
-        // Handle facing flip based on input while on ground or in air movement direction
-        if (horizontalInput > 0 && !isFacingRight)
+        time += Time.deltaTime;
+
+        // Handle facing flip
+        if (frameInput.Move.x > 0 && !isFacingRight)
         {
             Flip();
         }
-        else if (horizontalInput < 0 && isFacingRight)
+        else if (frameInput.Move.x < 0 && isFacingRight)
         {
             Flip();
         }
 
         // Walking animation
-        animator.SetBool("isWalking", horizontalInput != 0 && IsGrounded());
+        animator.SetBool("isWalking", frameInput.Move.x != 0 && grounded);
 
         // Jump/fall animator control
         UpdateJumpAnimatorFlags();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        Vector2 currentVelocity = rigidBody2D.velocity;
+        CheckCollisions();
 
-        float timeScale = TimeController.Instance.TimeScale;
-        currentVelocity.x = horizontalInput * movementSpeed * timeScale;
+        HandleJump();
+        HandleDirection();
+        HandleGravity();
 
-        if (jumpRequested && IsGrounded())
+        ApplyMovement();
+    }
+
+    #region Collisions
+
+    private void CheckCollisions()
+    {
+        Physics2D.queriesStartInColliders = false;
+
+        // Ground and Ceiling
+        bool groundHit = Physics2D.CapsuleCast(
+            capsuleCollider2D.bounds.center,
+            capsuleCollider2D.size,
+            capsuleCollider2D.direction,
+            0,
+            Vector2.down,
+            stats.GrounderDistance,
+            ~stats.PlayerLayer
+        );
+
+        bool ceilingHit = Physics2D.CapsuleCast(
+            capsuleCollider2D.bounds.center,
+            capsuleCollider2D.size,
+            capsuleCollider2D.direction,
+            0,
+            Vector2.up,
+            stats.GrounderDistance,
+            ~stats.PlayerLayer
+        );
+
+        // Hit a Ceiling
+        if (ceilingHit) frameVelocity.y = Mathf.Min(0, frameVelocity.y);
+
+        // Landed on the Ground
+        if (!grounded && groundHit)
         {
-            // If starting jump from standstill, prefer forward jump sprite
-            if (Mathf.Approximately(horizontalInput, 0f))
-            {
-                animator.SetBool("isJumpingForward", true);
-                animator.SetBool("isJumpingRight", false);
-            }
-            else
-            {
-                animator.SetBool("isJumpingRight", true);
-                animator.SetBool("isJumpingForward", false);
-            }
-
-            currentVelocity.y = jumpPower;
-            jumpRequested = false;
+            grounded = true;
+            coyoteUsable = true;
+            bufferedJumpUsable = true;
+            endedJumpEarly = false;
+        }
+        // Left the Ground
+        else if (grounded && !groundHit)
+        {
+            grounded = false;
+            frameLeftGrounded = time;
         }
 
-        rigidBody2D.velocity = currentVelocity;
+        Physics2D.queriesStartInColliders = cachedQueryStartInColliders;
     }
+
+    #endregion
+
+    #region Jumping
+
+    private bool HasBufferedJump => bufferedJumpUsable && time < timeJumpWasPressed + stats.JumpBuffer;
+    private bool CanUseCoyote => coyoteUsable && !grounded && time < frameLeftGrounded + stats.CoyoteTime;
+
+    private void HandleJump()
+    {
+        if (!endedJumpEarly && !grounded && !frameInput.JumpHeld && rigidBody2D.velocity.y > 0)
+            endedJumpEarly = true;
+
+        if (!jumpToConsume && !HasBufferedJump) return;
+
+        if (grounded || CanUseCoyote) ExecuteJump();
+
+        jumpToConsume = false;
+    }
+
+    private void ExecuteJump()
+    {
+        endedJumpEarly = false;
+        timeJumpWasPressed = 0;
+        bufferedJumpUsable = false;
+        coyoteUsable = false;
+        frameVelocity.y = stats.JumpPower;
+    }
+
+    #endregion
+
+    #region Horizontal
+
+    private void HandleDirection()
+    {
+        float timeScale = TimeController.Instance.TimeScale;
+
+        if (frameInput.Move.x == 0)
+        {
+            float deceleration = grounded ? stats.GroundDeceleration : stats.AirDeceleration;
+            frameVelocity.x = Mathf.MoveTowards(frameVelocity.x, 0, deceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            frameVelocity.x = Mathf.MoveTowards(
+                frameVelocity.x,
+                frameInput.Move.x * stats.MaxSpeed * timeScale,
+                stats.Acceleration * Time.fixedDeltaTime
+            );
+        }
+    }
+
+    #endregion
+
+    #region Gravity
+
+    private void HandleGravity()
+    {
+        if (grounded && frameVelocity.y <= 0f)
+        {
+            frameVelocity.y = stats.GroundingForce;
+        }
+        else
+        {
+            float inAirGravity = stats.FallAcceleration;
+            if (endedJumpEarly && frameVelocity.y > 0)
+                inAirGravity *= stats.JumpEndEarlyGravityModifier;
+
+            frameVelocity.y =
+                Mathf.MoveTowards(frameVelocity.y, -stats.MaxFallSpeed, inAirGravity * Time.fixedDeltaTime);
+        }
+    }
+
+    #endregion
+
+    private void ApplyMovement() => rigidBody2D.velocity = frameVelocity;
+
+    #region Input System
 
     public void Move(InputAction.CallbackContext context)
     {
-        horizontalInput = context.ReadValue<Vector2>().x;
+        Vector2 inputVector = context.ReadValue<Vector2>();
+        frameInput.Move = new Vector2(inputVector.x, inputVector.y);
 
         // If in air and player moves, switch to side jump sprite and ensure orientation matches movement
-        if (!IsGrounded())
+        if (!grounded)
         {
-            if (!Mathf.Approximately(horizontalInput, 0f))
+            if (!Mathf.Approximately(frameInput.Move.x, 0f))
             {
                 animator.SetBool("isJumpingRight", true);
                 animator.SetBool("isJumpingForward", false);
 
-                // Flip to match movement direction immediately
-                if (horizontalInput > 0 && !isFacingRight) Flip();
-                if (horizontalInput < 0 && isFacingRight) Flip();
+                if (frameInput.Move.x > 0 && !isFacingRight) Flip();
+                if (frameInput.Move.x < 0 && isFacingRight) Flip();
             }
         }
     }
 
     public void Jump(InputAction.CallbackContext context)
     {
-        if (context.performed && IsGrounded())
+        if (context.performed)
         {
-            jumpRequested = true;
+            jumpToConsume = true;
+            timeJumpWasPressed = time;
+            frameInput.JumpDown = true;
+            frameInput.JumpHeld = true;
+        }
+        else if (context.canceled)
+        {
+            frameInput.JumpHeld = false;
         }
     }
+
+    #endregion
+
+    #region Animations
 
     private void UpdateJumpAnimatorFlags()
     {
-        bool grounded = IsGrounded();
+        bool pendingJump = jumpToConsume || HasBufferedJump;
 
-        if (grounded)
-        {
-            // On ground, clear jump flags
-            animator.SetBool("isJumpingForward", false);
-            animator.SetBool("isJumpingRight", false);
-            return;
-        }
+        // Reset all jump flags by default
+        animator.SetBool("isJumpingForward", false);
+        animator.SetBool("isJumpingRight", false);
 
-        // In air: decide which jump sprite to show
-        if (!Mathf.Approximately(horizontalInput, 0f))
+        if (!grounded)
         {
-            animator.SetBool("isJumpingRight", true);
-            animator.SetBool("isJumpingForward", false);
+            if (rigidBody2D.velocity.y > 0f || pendingJump)
+            {
+                // Ascending: show jump animations
+                if (!Mathf.Approximately(frameInput.Move.x, 0f))
+                {
+                    animator.SetBool("isJumpingRight", true);
+                    animator.SetBool("isJumpingForward", false);
+                }
+                else
+                {
+                    animator.SetBool("isJumpingForward", true);
+                    animator.SetBool("isJumpingRight", false);
+                }
+
+                // While jumping, walking flag off
+                animator.SetBool("isWalking", false);
+            }
+            else
+            {
+                // Falling: use walking pose if moving sideways, idle if not
+                if (!Mathf.Approximately(frameInput.Move.x, 0f))
+                {
+                    animator.SetBool("isWalking", true);
+                    animator.speed = 0f; // freeze on first frame of walk
+                }
+                else
+                {
+                    animator.SetBool("isWalking", false);
+                    animator.speed = 1f; // reset speed for idle
+                }
+            }
         }
         else
         {
-            animator.SetBool("isJumpingForward", true);
-            animator.SetBool("isJumpingRight", false);
+            // Grounded: normal walking/idle
+            animator.speed = 1f;
+            animator.SetBool("isWalking", !Mathf.Approximately(frameInput.Move.x, 0f));
         }
-    }
-
-    private bool IsGrounded()
-    {
-        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
     }
 
     private void Flip()
@@ -132,4 +292,13 @@ public class PlayerController : MonoBehaviour
         localScale.x *= -1;
         transform.localScale = localScale;
     }
+
+    #endregion
+}
+
+public struct FrameInput
+{
+    public bool JumpDown;
+    public bool JumpHeld;
+    public Vector2 Move;
 }
