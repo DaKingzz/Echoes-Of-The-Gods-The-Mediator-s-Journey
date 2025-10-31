@@ -252,6 +252,13 @@ MonoBehaviour:
   pointThreshold: 0.1
   target: {fileID: 0}
   chaseRange: 5
+  chaseRangeBonus: 3
+  memoryTime: 2
+  chaseSpeedMultiplier: 1.5
+  preferredVerticalSeparation: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 128
   walkThreshold: 0.1
 --- !u!58 &1797519832013797725
 CircleCollider2D:
