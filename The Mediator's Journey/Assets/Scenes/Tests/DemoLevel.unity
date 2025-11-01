@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 208200307}
   - component: {fileID: 208200306}
   - component: {fileID: 208200305}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -400,7 +400,7 @@ GameObject:
   - component: {fileID: 350766279}
   - component: {fileID: 350766278}
   - component: {fileID: 350766277}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -530,7 +530,7 @@ GameObject:
   - component: {fileID: 538360794}
   - component: {fileID: 538360793}
   - component: {fileID: 538360792}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -667,7 +667,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4527050788462358187, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 39.6
+      value: 48.7
       objectReference: {fileID: 0}
     - target: {fileID: 4527050788462358187, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -713,6 +713,38 @@ PrefabInstance:
       propertyPath: chaseRange
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: memoryTime
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: candidateRings
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: candidateRadius
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: chaseRangeBonus
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: avoidRayDistance
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: candidatePerRing
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: chaseSpeedMultiplier
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: preferredVerticalSeparation
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -729,7 +761,7 @@ GameObject:
   - component: {fileID: 1066827088}
   - component: {fileID: 1066827087}
   - component: {fileID: 1066827086}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -859,7 +891,7 @@ GameObject:
   - component: {fileID: 1805486519}
   - component: {fileID: 1805486518}
   - component: {fileID: 1805486517}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Square (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

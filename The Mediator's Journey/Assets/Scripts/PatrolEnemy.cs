@@ -28,6 +28,28 @@ public class FlyingEnemy : MonoBehaviour
     [Header("Vision")] [Tooltip("Layers that block the enemy's vision (e.g., Walls, Obstacles).")]
     public LayerMask obstacleMask;
 
+    [Header("Local Pathfinding (candidate sampling)")]
+    [Tooltip("Maximum radius around the goal to sample alternative reachable points.")]
+    public float candidateRadius = 2.0f;
+
+    [Tooltip("Number of radial rings to sample (1 = only radius step, higher = wider search).")]
+    public int candidateRings = 3;
+
+    [Tooltip("Number of samples per ring (angular steps).")]
+    public int candidatePerRing = 8;
+
+    [Tooltip("Extra upward bias when choosing a candidate goal to escape under platforms.")]
+    public float candidateUpBias = 0.5f;
+
+    [Header("Avoidance (fallback steering)")]
+    public float avoidRayDistance = 1.0f;
+
+    public int avoidRayCount = 5;
+    public float avoidRayAngle = 60f; // total spread in degrees
+    public float avoidStrength = 2.0f;
+    public bool ascendWhenBlocked = true;
+    public float ascendSpeedBias = 0.6f;
+
     [Header("Visuals")] public float walkThreshold = 0.1f; // speed above which we consider the enemy walking
 
     Rigidbody2D rb;
@@ -67,7 +89,6 @@ public class FlyingEnemy : MonoBehaviour
             float distToPlayer = Vector2.Distance(transform.position, target.position);
             if (distToPlayer <= detectionRange)
             {
-                // cast from enemy to player, checking for obstacles
                 Vector2 dir = ((Vector2)target.position - (Vector2)transform.position).normalized;
                 RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, distToPlayer, obstacleMask);
                 if (hit.collider == null)
@@ -104,7 +125,10 @@ public class FlyingEnemy : MonoBehaviour
                 rawGoal.y = rawGoal.y + direction * preferredVerticalSeparation;
             }
 
-            Vector2 toGoal = rawGoal - rb.position;
+            // pick a reachable goal using local pathfinder
+            Vector2 goal = GetReachableGoal(rawGoal);
+
+            Vector2 toGoal = goal - rb.position;
             if (toGoal.magnitude <= pointThreshold)
             {
                 // reached last known pos — if player not currently seen, stop chasing
@@ -133,7 +157,9 @@ public class FlyingEnemy : MonoBehaviour
             else
             {
                 Vector2 goal = pts[currentPointIndex].position;
-                Vector2 toGoal = goal - rb.position;
+                // try to get reachable patrol goal too
+                Vector2 reachablePatrolGoal = GetReachableGoal(goal);
+                Vector2 toGoal = reachablePatrolGoal - rb.position;
                 if (toGoal.magnitude <= pointThreshold)
                     currentPointIndex = 1 - currentPointIndex; // toggle 0 <-> 1
                 desired = toGoal.normalized * moveSpeed;
@@ -142,6 +168,12 @@ public class FlyingEnemy : MonoBehaviour
         else
         {
             desired = Vector2.zero; // hover
+        }
+
+        // Apply local avoidance fallback before smoothing
+        if (desired != Vector2.zero)
+        {
+            desired = AvoidObstacles(desired);
         }
 
         // Smooth velocity and apply
@@ -163,6 +195,101 @@ public class FlyingEnemy : MonoBehaviour
         }
     }
 
+    // Local pathfinder: sample candidate goals around rawGoal and pick first reachable candidate.
+    // If direct line to rawGoal is free, returns rawGoal.
+    Vector2 GetReachableGoal(Vector2 rawGoal)
+    {
+        Vector2 from = rb.position;
+        Vector2 dirToRaw = rawGoal - from;
+        float distToRaw = dirToRaw.magnitude;
+        if (distToRaw <= 0.01f) return rawGoal;
+
+        // if direct path is free, return it
+        RaycastHit2D directHit = Physics2D.Raycast(from, dirToRaw.normalized, distToRaw, obstacleMask);
+        if (directHit.collider == null) return rawGoal;
+
+        // sample rings of candidates around the rawGoal
+        for (int ring = 1; ring <= candidateRings; ring++)
+        {
+            float radius = candidateRadius * (ring / (float)candidateRings);
+            for (int i = 0; i < candidatePerRing; i++)
+            {
+                float angle = (360f / candidatePerRing) * i;
+                float rad = angle * Mathf.Deg2Rad;
+                Vector2 offset = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * radius;
+
+                // apply slight upward bias to prefer escaping downwards/ upwards as configured
+                offset += Vector2.up * candidateUpBias * (ring / (float)candidateRings);
+
+                Vector2 candidate = rawGoal + offset;
+                Vector2 toCand = candidate - from;
+                float candDist = toCand.magnitude;
+                if (candDist <= 0.01f) continue;
+
+                // test line of sight to candidate
+                RaycastHit2D hit = Physics2D.Raycast(from, toCand.normalized, candDist, obstacleMask);
+                if (hit.collider == null)
+                {
+                    // found a reachable candidate
+                    return candidate;
+                }
+            }
+        }
+
+        // no reachable candidate found; fallback to a small upward-adjusted rawGoal so enemy can try to climb out
+        return rawGoal + Vector2.up * candidateUpBias;
+    }
+
+    // Simple multi-ray avoidance for flyers (fallback smoothing)
+    Vector2 AvoidObstacles(Vector2 desired)
+    {
+        if (desired == Vector2.zero) return desired;
+
+        Vector2 pos = transform.position;
+        Vector2 forward = desired.normalized;
+        float halfSpread = avoidRayAngle * 0.5f;
+        Vector2 avoid = Vector2.zero;
+        bool anyHit = false;
+
+        for (int i = 0; i < Mathf.Max(1, avoidRayCount); i++)
+        {
+            float t = (avoidRayCount == 1) ? 0.5f : (float)i / (avoidRayCount - 1);
+            float angle = Mathf.Lerp(-halfSpread, halfSpread, t);
+            float rad = angle * Mathf.Deg2Rad;
+
+            // rotate forward by angle
+            Vector2 dir = new Vector2(
+                forward.x * Mathf.Cos(rad) - forward.y * Mathf.Sin(rad),
+                forward.x * Mathf.Sin(rad) + forward.y * Mathf.Cos(rad)
+            ).normalized;
+
+            RaycastHit2D hit = Physics2D.Raycast(pos, dir, avoidRayDistance, obstacleMask);
+
+#if UNITY_EDITOR
+            Debug.DrawRay(pos, dir * avoidRayDistance, hit.collider ? Color.red : Color.green);
+#endif
+
+            if (hit.collider != null)
+            {
+                anyHit = true;
+                avoid += hit.normal;
+            }
+        }
+
+        if (!anyHit) return desired;
+
+        // average normals and blend
+        avoid /= Mathf.Max(1, avoidRayCount);
+        Vector2 blended = (forward + avoid.normalized * avoidStrength).normalized;
+
+        // optional upward bias so flyers try to ascend out of tight horizontal gaps
+        if (ascendWhenBlocked)
+            blended.y += ascendSpeedBias;
+
+        // preserve desired speed
+        return blended.normalized * desired.magnitude;
+    }
+
     // Draw simple gizmos for the two patrol points and connecting line
     void OnDrawGizmos()
     {
@@ -174,7 +301,6 @@ public class FlyingEnemy : MonoBehaviour
         // Draw effective chase range only while remembering or during detection in play mode
         Gizmos.color = Color.red;
         float effectiveRangeToDraw = chaseRange;
-        // if in play mode use runtime remembering flag; otherwise show extended range for clarity
 #if UNITY_EDITOR
         if (Application.isPlaying)
             effectiveRangeToDraw = chaseRange + (isRemembering ? chaseRangeBonus : 0f);
