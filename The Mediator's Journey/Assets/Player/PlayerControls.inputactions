@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "name": "PlayerControls 1",
+    "name": "PlayerControls",
     "maps": [
         {
             "name": "Player",
