@@ -1879,6 +1879,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainMenuPanel: {fileID: 1698198899}
   settingsPanel: {fileID: 1468335572}
+  creditsPanel: {fileID: 0}
 --- !u!1 &1816952760
 GameObject:
   m_ObjectHideFlags: 0
