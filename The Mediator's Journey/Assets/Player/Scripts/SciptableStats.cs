@@ -23,6 +23,9 @@ public class ScriptableStats : ScriptableObject
     [Header("MOVEMENT")] [Tooltip("The top horizontal movement speed")]
     public float MaxSpeed = 14;
 
+    [Tooltip("Run speed multiplier when sprinting")]
+    public float SprintMultiplier = 4f;
+    
     [Tooltip("The player's capacity to gain horizontal speed")]
     public float Acceleration = 120;
 
