@@ -231,6 +231,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void Run(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            stats.MaxSpeed *= stats.SprintMultiplier;
+        }
+        else if (context.canceled)
+        {
+            stats.MaxSpeed /= stats.SprintMultiplier;
+        }
+    }
+
     #endregion
 
     #region Animations
