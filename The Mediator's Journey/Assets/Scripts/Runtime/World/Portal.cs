@@ -11,8 +11,7 @@ public class Portal : MonoBehaviour
 
     void Reset()
     {
-        var col = GetComponent<BoxCollider2D>();
-        col.isTrigger = true;
+        GetComponent<BoxCollider2D>().isTrigger = true;
     }
 
     void OnTriggerEnter2D(Collider2D other)
