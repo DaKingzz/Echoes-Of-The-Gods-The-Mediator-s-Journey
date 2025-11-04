@@ -122,6 +122,36 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &238330458 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1679101077373667717, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
+  m_PrefabInstance: {fileID: 1357957398}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &475242048 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6418633332907006142, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
+  m_PrefabInstance: {fileID: 1357957398}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &889381692 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6093488170834593900, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
+  m_PrefabInstance: {fileID: 1357957398}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &889381697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 889381692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c80b924a55853c45806cd67694d2dd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainMenuPanel: {fileID: 889381692}
+  settingsPanel: {fileID: 475242048}
+  creditsPanel: {fileID: 238330458}
 --- !u!1 &1029524849
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,10 +484,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenuCanvas
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6893157129072314963, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6093488170834593900, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 889381697}
   m_SourcePrefab: {fileID: 100100000, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
