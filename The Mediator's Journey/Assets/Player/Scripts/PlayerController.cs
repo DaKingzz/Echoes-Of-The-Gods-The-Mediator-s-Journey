@@ -30,11 +30,15 @@ public class PlayerController : MonoBehaviour
     // Facing direction
     private bool isFacingRight = true;
 
+    [SerializeField] private GameObject weapon;
+    private Animator weaponAnimator;
+
     private void Awake()
     {
         rigidBody2D = GetComponent<Rigidbody2D>();
         capsuleCollider2D = GetComponent<CapsuleCollider2D>();
         animator = GetComponent<Animator>();
+        weaponAnimator = weapon.GetComponent<Animator>();
 
         cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
     }
@@ -170,6 +174,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region attacking
+    public void Attack()
+    {
+        weaponAnimator.SetTrigger("swordAttack");
+    }
     #endregion
 
     #region Gravity
