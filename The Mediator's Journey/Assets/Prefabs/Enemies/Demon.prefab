@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6909975827866226275}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PointA
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1220161088188682589}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PointB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4527050788462358187}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Demon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -110,7 +110,7 @@ GameObject:
   - component: {fileID: 6286153782112449913}
   - component: {fileID: 6980242358776574329}
   - component: {fileID: 1797519832013797725}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PatrollingEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -259,6 +259,16 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 128
+  candidateRadius: 2
+  candidateRings: 3
+  candidatePerRing: 8
+  candidateUpBias: 0.5
+  avoidRayDistance: 1
+  avoidRayCount: 5
+  avoidRayAngle: 60
+  avoidStrength: 2
+  ascendWhenBlocked: 1
+  ascendSpeedBias: 0.6
   walkThreshold: 0.1
 --- !u!58 &1797519832013797725
 CircleCollider2D:
