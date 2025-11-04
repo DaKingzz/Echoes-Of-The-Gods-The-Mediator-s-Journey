@@ -2,35 +2,37 @@ using UnityEngine;
 
 public class MainMenu : MonoBehaviour
 {
+    [Header("Panels")]
     public GameObject mainMenuPanel;
     public GameObject settingsPanel;
     public GameObject creditsPanel;
 
     public void Play()
     {
-        //UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+        GameManager.Instance.StartNewGame();
     }
 
     public void OpenSettings()
     {
-        mainMenuPanel.SetActive(false);
-        settingsPanel.SetActive(true);
+        if (mainMenuPanel) mainMenuPanel.SetActive(false);
+        if (settingsPanel) settingsPanel.SetActive(true);
     }
+
     public void OpenCredits()
     {
-        mainMenuPanel.SetActive(false);
-        creditsPanel.SetActive(true);
+        if (mainMenuPanel) mainMenuPanel.SetActive(false);
+        if (creditsPanel) creditsPanel.SetActive(true);
     }
 
     public void BackToMenu()
     {
-        settingsPanel.SetActive(false);
-        creditsPanel.SetActive(false);
-        mainMenuPanel.SetActive(true);
+        if (settingsPanel) settingsPanel.SetActive(false);
+        if (creditsPanel) creditsPanel.SetActive(false);
+        if (mainMenuPanel) mainMenuPanel.SetActive(true);
     }
 
     public void Quit()
     {
-        Application.Quit();
+        GameManager.Instance.Quit();
     }
 }

@@ -122,36 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &238330458 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1679101077373667717, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-  m_PrefabInstance: {fileID: 1357957398}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &475242048 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6418633332907006142, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-  m_PrefabInstance: {fileID: 1357957398}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &889381692 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6093488170834593900, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-  m_PrefabInstance: {fileID: 1357957398}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &889381697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 889381692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c80b924a55853c45806cd67694d2dd3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mainMenuPanel: {fileID: 889381692}
-  settingsPanel: {fileID: 475242048}
-  creditsPanel: {fileID: 238330458}
 --- !u!1 &1029524849
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,7 +338,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1357957398
+--- !u!1001 &1493946335
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -376,30 +346,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 11500000, guid: 0c80b924a55853c45806cd67694d2dd3, type: 3}
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2896617007518059044, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 6407186519217013480, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -484,19 +430,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenuCanvas
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 6893157129072314963, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6093488170834593900, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 889381697}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b4a7963062fc4214d8166c39cc2d698e, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1029524852}
-  - {fileID: 1357957398}
+  - {fileID: 1493946335}
   - {fileID: 1068021343}
