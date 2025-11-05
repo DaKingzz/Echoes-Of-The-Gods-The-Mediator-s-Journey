@@ -12,7 +12,10 @@ TagManager:
   - Water
   - UI
   - Ground
-  - Not see trough
+  - Not See Through
+  - BG_Far
+  - BG_Near
+  - World/Decor
   - Enemy
   - 
   - 
