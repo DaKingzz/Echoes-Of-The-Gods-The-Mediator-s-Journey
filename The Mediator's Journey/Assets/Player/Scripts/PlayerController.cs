@@ -8,15 +8,14 @@ public class PlayerController : MonoBehaviour
     private float movementSpeed = 8f;
 
     [SerializeField] private float runMultiplier = 1.5f;
-    [SerializeField] private float jumpForce = 12f;
+
+    [Header("Jump Settings")] [SerializeField]
+    private float initialJumpForce = 8f; // burst at jump start
+
+    [SerializeField] private float sustainedJumpForce = 5f; // extra force while holding
+    [SerializeField] private float sustainedJumpDuration = 0.25f; // how long extra force can be applied
     [SerializeField] private float gravityScale = 3f;
     [SerializeField] private float fallGravityMultiplier = 2f;
-    [SerializeField] private float jumpReleaseGravityMultiplier = 3f;
-
-    [Header("Jump Tuning")] [SerializeField]
-    private float minimumHopForce = 4f;
-
-    [SerializeField] private float minimumPressTime = 0.08f;
 
     private Rigidbody2D rigidBody2D;
     private Collider2D collider2D;
@@ -95,36 +94,30 @@ public class PlayerController : MonoBehaviour
         if (movementInput.x > 0 && !isFacingRight) Flip();
         else if (movementInput.x < 0 && isFacingRight) Flip();
 
-        // Jump
+        // Jump start
         if (jumpPressed && isGrounded)
         {
-            rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, jumpForce);
+            rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, initialJumpForce);
             jumpStartTime = Time.time;
         }
 
-        // Apply extra gravity when falling
+        // Sustained jump while holding
+        if (jumpHeld && !isGrounded)
+        {
+            float elapsed = Time.time - jumpStartTime;
+            if (elapsed < sustainedJumpDuration)
+            {
+                // Apply diminishing upward force
+                float holdFactor = 1f - (elapsed / sustainedJumpDuration); // decreases from 1 to 0
+                rigidBody2D.velocity += Vector2.up * (sustainedJumpForce * holdFactor * Time.fixedDeltaTime);
+            }
+        }
+
+        // Extra gravity when falling
         if (rigidBody2D.velocity.y < 0f)
         {
             rigidBody2D.velocity +=
-                Vector2.up * Physics2D.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
-        }
-        // Apply stronger gravity if jump was released early while ascending
-        else if (rigidBody2D.velocity.y > 0f && !jumpHeld)
-        {
-            float elapsed = Time.time - jumpStartTime;
-
-            if (elapsed >= minimumPressTime)
-            {
-                rigidBody2D.velocity += Vector2.up * Physics2D.gravity.y * (jumpReleaseGravityMultiplier - 1f) *
-                                        Time.fixedDeltaTime;
-            }
-            else
-            {
-                if (rigidBody2D.velocity.y > minimumHopForce)
-                {
-                    rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, minimumHopForce);
-                }
-            }
+                Vector2.up * (Physics2D.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime);
         }
 
         jumpPressed = false;
