@@ -257,12 +257,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movementSpeed: 8
   runMultiplier: 1.5
-  jumpForce: 10
+  initialJumpForce: 8
+  sustainedJumpForce: 5
+  sustainedJumpDuration: 0.25
   gravityScale: 3
   fallGravityMultiplier: 2
-  jumpReleaseGravityMultiplier: 3
-  minimumHopForce: 4
-  minimumPressTime: 0.08
 --- !u!95 &-933271739459964310
 Animator:
   serializedVersion: 5
@@ -437,7 +436,7 @@ Camera:
   far clip plane: 1000
   field of view: 90
   orthographic: 1
-  orthographic size: 35
+  orthographic size: 17
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
