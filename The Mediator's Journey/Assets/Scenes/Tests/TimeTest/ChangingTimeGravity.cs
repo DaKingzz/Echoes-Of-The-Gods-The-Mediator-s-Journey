@@ -31,7 +31,7 @@ public class ChangingTimeGravity : MonoBehaviour
 
         if (currentTimeScaleText != null)
         {
-            currentTimeScaleText.text = $"Current Time Scale: {TimeController.Instance.TimeScale:F2}";
+            // currentTimeScaleText.text = $"Current Time Scale: {TimeController.Instance.TimeScale:F2}";
         }
     }
 
@@ -39,7 +39,7 @@ public class ChangingTimeGravity : MonoBehaviour
     {
         if (currentTimeScaleText != null)
         {
-            currentTimeScaleText.text = $"Current Time Scale: {TimeController.Instance.TimeScale}";
+            // currentTimeScaleText.text = $"Current Time Scale: {TimeController.Instance.TimeScale}";
         }
     }
 
@@ -50,7 +50,7 @@ public class ChangingTimeGravity : MonoBehaviour
         while (true)
         {
             float targetTimeScale = timeScaleSequence[index];
-            TimeController.Instance.TimeScale = targetTimeScale;
+            // TimeController.Instance.TimeScale = targetTimeScale;
 
             // countdown using unscaled time so it's not affected by TimeScale
             float remainingUnscaledSeconds = secondsPerStep;
