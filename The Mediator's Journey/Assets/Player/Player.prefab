@@ -240,7 +240,7 @@ MonoBehaviour:
     m_ActionName: Player/Run[/Keyboard/shift]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8692472409853568222}
+      - m_Target: {fileID: 7112581997745432066}
         m_TargetAssemblyTypeName: SwordWeapon, Assembly-CSharp
         m_MethodName: Attack
         m_Mode: 0
@@ -310,11 +310,11 @@ GameObject:
   - component: {fileID: 1122362849664133006}
   - component: {fileID: 2923070548930753224}
   - component: {fileID: 7013114608958480597}
-  - component: {fileID: 7827596178991220593}
-  - component: {fileID: 8692472409853568222}
+  - component: {fileID: 6221867527904841515}
+  - component: {fileID: 7112581997745432066}
   m_Layer: 0
   m_Name: Weapon
-  m_TagString: Untagged
+  m_TagString: PlayerWeapon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -328,8 +328,8 @@ Transform:
   m_GameObject: {fileID: 4250079096522527915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.8, y: 0.99, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalPosition: {x: 3.07, y: 0.99, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 4337611100334240858}
@@ -407,7 +407,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!70 &7827596178991220593
+--- !u!70 &6221867527904841515
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -419,10 +419,10 @@ CapsuleCollider2D:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -436,13 +436,13 @@ CapsuleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 2.48, y: 11.63}
+  m_Offset: {x: 0, y: 0.39}
+  m_Size: {x: 2.98, y: 12.35}
   m_Direction: 0
---- !u!114 &8692472409853568222
+--- !u!114 &7112581997745432066
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -454,6 +454,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a5ed9203d8930f43bf2be9e37e473e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackPower: 3
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 2048
 --- !u!1 &4863411110276509613
 GameObject:
   m_ObjectHideFlags: 0
@@ -466,7 +470,7 @@ GameObject:
   - component: {fileID: 2029295491531214864}
   - component: {fileID: 6518442074862248040}
   - component: {fileID: 4174175280966251760}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}

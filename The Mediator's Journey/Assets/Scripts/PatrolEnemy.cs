@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class FlyingEnemy : MonoBehaviour
+public class FlyingEnemy : MonoBehaviour, IEnemy
 {
+    private static readonly int IsHit = Animator.StringToHash("isHit");
     [Header("Movement")] public float moveSpeed = 3f;
     public float accel = 10f;
     public bool patrol = true;
@@ -52,6 +54,10 @@ public class FlyingEnemy : MonoBehaviour
 
     [Header("Visuals")] public float walkThreshold = 0.1f; // speed above which we consider the enemy walking
 
+    [Header("Attack system")]
+    [SerializeField] private float maxHealth = 15f;
+    private float currentHealth;
+
     Rigidbody2D rb;
     Vector2 velocity;
     int currentPointIndex = 0;
@@ -64,6 +70,11 @@ public class FlyingEnemy : MonoBehaviour
     Vector2 lastKnownPlayerPos;
     float lastSeenTime = -999f;
     bool isRemembering = false; // true while within memoryTime
+    
+    private void Start()
+    {
+        currentHealth = maxHealth;
+    }
 
     void Awake()
     {
@@ -138,12 +149,12 @@ public class FlyingEnemy : MonoBehaviour
                 }
                 else
                 {
-                    desired = toGoal.normalized * moveSpeed * chaseSpeedMultiplier;
+                    desired = toGoal.normalized * (moveSpeed * chaseSpeedMultiplier);
                 }
             }
             else
             {
-                desired = toGoal.normalized * moveSpeed * chaseSpeedMultiplier;
+                desired = toGoal.normalized * (moveSpeed * chaseSpeedMultiplier);
             }
         }
         else if (patrol && (pointA != null || pointB != null))
@@ -194,7 +205,33 @@ public class FlyingEnemy : MonoBehaviour
             animator.SetBool("isWalking", isWalking);
         }
     }
+    
+    #region attack system
 
+    public bool TakeDamage(float amount)
+    {
+        animator.SetTrigger(IsHit);
+        currentHealth -= amount;
+        Debug.Log($"Patrol enemy took damage: {amount}, current health: {currentHealth}");
+        if (currentHealth <= 0f)
+        {
+            Die();
+            return true;
+        }
+
+        return false;
+    }
+    
+    private void Die()
+    {
+        // Handle enemy death (e.g., play animation, drop loot, etc.)
+        // TODO show death animation
+        Destroy(gameObject);
+    }
+
+    #endregion attack system
+
+    #region navigation
     // Local pathfinder: sample candidate goals around rawGoal and pick first reachable candidate.
     // If direct line to rawGoal is free, returns rawGoal.
     Vector2 GetReachableGoal(Vector2 rawGoal)
@@ -289,6 +326,7 @@ public class FlyingEnemy : MonoBehaviour
         // preserve desired speed
         return blended.normalized * desired.magnitude;
     }
+    #endregion navigation
 
     // Draw simple gizmos for the two patrol points and connecting line
     void OnDrawGizmos()
