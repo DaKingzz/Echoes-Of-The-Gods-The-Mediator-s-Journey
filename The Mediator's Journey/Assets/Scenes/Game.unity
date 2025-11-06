@@ -3554,6 +3554,10 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 361703529}
+    - target: {fileID: 871618573698329791, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: attackCooldown
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4527050788462358187, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 26.037638
@@ -3606,6 +3610,14 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 361703529}
+    - target: {fileID: 6980242358776574329, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: obstacleMask.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7881339780490198255, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
