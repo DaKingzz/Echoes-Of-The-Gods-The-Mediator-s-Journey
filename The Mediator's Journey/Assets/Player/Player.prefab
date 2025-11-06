@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 223006276990223830}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.67, y: 7.07, z: 3}
+  m_LocalPosition: {x: -55.6, y: 45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -271,13 +271,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa1a46758c0d8024bbbc78427ddd64fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 10
   movementSpeed: 8
-  runMultiplier: 1.5
-  initialJumpForce: 8
-  sustainedJumpForce: 5
-  sustainedJumpDuration: 0.25
+  runMultiplier: 2
+  initialJumpForce: 10
+  sustainedJumpForce: 30
+  sustainedJumpDuration: 5
   gravityScale: 3
-  fallGravityMultiplier: 2
+  fallGravityMultiplier: 4
 --- !u!95 &-933271739459964310
 Animator:
   serializedVersion: 5
