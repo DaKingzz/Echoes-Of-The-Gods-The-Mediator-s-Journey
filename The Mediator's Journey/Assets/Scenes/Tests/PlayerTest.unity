@@ -210,42 +210,82 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4067137687561029258, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: textSpeed
+      value: 0.001
+      objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.size
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[0]
-      value: 'Hello traveller! What brings you to this area? '
+      value: 'NPC: Hello traveller! What brings you to this area? '
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[1]
-      value: "\u2026 "
+      value: "MEDIATOR: \u2026 "
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[2]
-      value: "I\u2026um\u2026well if you are here to help us look for Turminion\u2019s
+      value: "NPC: I\u2026um\u2026well if you are here to help us look for Turminion\u2019s
         missing cat, well that\u2019d be great, except no one has found it yet...
         anyways, you have come to the right place! \u2026I think\u2026 "
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[3]
-      value: "\u2026 "
+      value: "MEDIATOR: \u2026 "
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[4]
-      value: 'We have been looking for this cat for as long as I can remember, and
-        since we are in the realm of Turminion, we hoped to find the cat somewhere
+      value: 'NPC: We have been looking for this cat for as long as I can remember,
+        and since we are in the realm of Turminion, we hoped to find the cat somewhere
         around these parts. I hope you can lend us a hand haha...I am tired of looking
         for this damned cat... '
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[5]
-      value: "\u2026 "
+      value: "MEDIATOR: \u2026 "
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.data[6]
-      value: "I\u2026um\u2026well good luck on your travels."
+      value: "NPC: I\u2026um\u2026well good luck on your travels."
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: -100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4914536819290817139, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6110951911370600310, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: m_IsActive

@@ -10,6 +10,7 @@ public class Dialogue : MonoBehaviour
     public TextMeshProUGUI textComponent;
     public string[] lines;
     public float textSpeed;
+    private PlayerController playerMovement;
 
     private int index;
 
@@ -17,13 +18,14 @@ public class Dialogue : MonoBehaviour
     void Start()
     {
         textComponent.text = string.Empty;
+        playerMovement = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
         startDialogue();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Mouse.current.leftButton.wasPressedThisFrame)
+        if(Mouse.current.leftButton.wasPressedThisFrame || Keyboard.current.eKey.wasPressedThisFrame)
         {
             if(textComponent.text == lines[index])
             {
@@ -37,9 +39,11 @@ public class Dialogue : MonoBehaviour
         }
     }
 
-    void startDialogue()
+    public void startDialogue()
     {
         index = 0;
+        textComponent.text = "";
+        StopAllCoroutines();
         StartCoroutine(TypeLine());
     }
 
@@ -64,6 +68,11 @@ public class Dialogue : MonoBehaviour
         else
         {
             gameObject.SetActive(false);
+            if (playerMovement != null)
+            {
+                playerMovement.enabled = true;
+            }
+                
         }
     }
 }

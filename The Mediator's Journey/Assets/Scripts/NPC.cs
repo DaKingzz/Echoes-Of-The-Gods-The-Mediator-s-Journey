@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class NPC : MonoBehaviour
 {
-
     public GameObject dialoguePanel;
     public bool playerIsClose;
-
+    private PlayerController playerMovement;
+    private Dialogue dialogue;
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerMovement = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
+
     }
 
     // Update is called once per frame
@@ -20,15 +22,17 @@ public class NPC : MonoBehaviour
     {
         if (Keyboard.current.eKey.wasPressedThisFrame && playerIsClose)
         {
-            if (dialoguePanel.activeInHierarchy)
+            if (!dialoguePanel.activeInHierarchy)
             {
-                dialoguePanel.SetActive(false);
-            }
-            else
-            {
-                
                 dialoguePanel.SetActive(true);
-               
+                playerMovement.enabled = false;
+
+                Dialogue dialogue = dialoguePanel.GetComponent<Dialogue>();
+                if (dialogue != null)
+                {
+                    dialogue.startDialogue();
+                }
+
             }
         }
     }
