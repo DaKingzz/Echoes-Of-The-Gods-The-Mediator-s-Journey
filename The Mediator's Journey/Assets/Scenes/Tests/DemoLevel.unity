@@ -1076,12 +1076,20 @@ PrefabInstance:
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
+      propertyPath: runMultiplier
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: initialJumpForce
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: sustainedJumpForce
-      value: 20
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
+      propertyPath: fallGravityMultiplier
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: sustainedJumpDuration
