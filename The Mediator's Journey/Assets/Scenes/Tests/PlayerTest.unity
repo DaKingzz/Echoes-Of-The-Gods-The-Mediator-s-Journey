@@ -216,7 +216,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: textSpeed
-      value: 0.001
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 4593545943578730774, guid: 1ecef3dcadab26442b17f962dbb5d05a, type: 3}
       propertyPath: lines.Array.size
