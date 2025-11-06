@@ -650,6 +650,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 871618573698329791, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 2116116400}
+    - target: {fileID: 871618573698329791, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
+      propertyPath: fireballSpeed
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 1220161088188682589, guid: 77351bd01e0740743939a33d73ce59b0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.74
@@ -1062,6 +1070,10 @@ PrefabInstance:
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: jumpForce
       value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
+      propertyPath: maxHealth
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: initialJumpForce

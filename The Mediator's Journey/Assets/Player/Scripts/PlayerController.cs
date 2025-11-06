@@ -2,8 +2,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IPlayer
 {
+    [Header("Health Settings")] [SerializeField]
+    private float maxHealth = 10f;
+
+    private float currentHealth;
+
     [Header("Movement Settings")] [SerializeField]
     private float movementSpeed = 8f;
 
@@ -37,6 +42,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
 
         rigidBody2D.gravityScale = gravityScale;
+        currentHealth = maxHealth;
     }
 
     private void Update()
@@ -155,5 +161,17 @@ public class PlayerController : MonoBehaviour
         Vector3 localScale = transform.localScale;
         localScale.x *= -1f;
         transform.localScale = localScale;
+    }
+
+    public void TakeDamage(float damage)
+    {
+        Debug.Log($"Player took {damage} damage!");
+        // Implement health reduction and death logic here
+        currentHealth -= damage;
+        if (currentHealth <= 0f)
+        {
+            Debug.Log("Player has died!");
+            Destroy(gameObject);
+        }
     }
 }

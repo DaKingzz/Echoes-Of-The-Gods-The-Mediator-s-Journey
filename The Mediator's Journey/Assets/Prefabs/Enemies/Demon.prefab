@@ -110,6 +110,7 @@ GameObject:
   - component: {fileID: 6286153782112449913}
   - component: {fileID: 7883655169494138751}
   - component: {fileID: 6980242358776574329}
+  - component: {fileID: 871618573698329791}
   m_Layer: 11
   m_Name: PatrollingEnemy
   m_TagString: Untagged
@@ -305,4 +306,22 @@ MonoBehaviour:
   ascendWhenBlocked: 1
   ascendSpeedBias: 0.6
   walkThreshold: 0.1
-  maxHealth: 100
+  maxHealth: 15
+--- !u!114 &871618573698329791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7771235776015172694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 451557b5186b0ac4e808ddeb1bec95f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fireballPrefab: {fileID: 3752732254100351284, guid: b5708c94751f1a44b9f2c650790187ac, type: 3}
+  firePoint: {fileID: 7881339780490198255}
+  fireballSpeed: 30
+  precision: 0.9
+  attackCooldown: 2
+  target: {fileID: 0}

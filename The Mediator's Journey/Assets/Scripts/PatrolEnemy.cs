@@ -71,9 +71,12 @@ public class FlyingEnemy : MonoBehaviour, IEnemy
     float lastSeenTime = -999f;
     bool isRemembering = false; // true while within memoryTime
     
+    private EnemyFireballAttack fireballAttack;
+    
     private void Start()
     {
         currentHealth = maxHealth;
+        fireballAttack = GetComponent<EnemyFireballAttack>();
     }
 
     void Awake()
@@ -124,6 +127,12 @@ public class FlyingEnemy : MonoBehaviour, IEnemy
         // Decide behavior: chase (if seen or recently seen) or patrol/hover
         if (playerInSight || isRemembering)
         {
+            // Try to attack
+            if (fireballAttack.TryAttack())
+            {
+                animator.SetTrigger("isAttacking");
+            }
+                
             // chase using last known position
             Vector2 rawGoal = lastKnownPlayerPos;
 
@@ -196,7 +205,7 @@ public class FlyingEnemy : MonoBehaviour, IEnemy
         {
             float vx = rb.velocity.x;
             if (Mathf.Abs(vx) > 0.001f)
-                sr.flipX = vx < 0f; // face right when flipX = false
+                sr.flipX = vx > 0f; // face right when flipX = false
         }
 
         if (animator != null)
