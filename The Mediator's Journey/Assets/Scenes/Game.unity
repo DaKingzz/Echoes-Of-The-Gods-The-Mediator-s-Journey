@@ -6258,6 +6258,10 @@ PrefabInstance:
       value: -1.53
       objectReference: {fileID: 0}
     - target: {fileID: 6657484908982459704, guid: 5fb7e0b860aa67b4090792c986cc5aaa, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 361703529}
+    - target: {fileID: 6657484908982459704, guid: 5fb7e0b860aa67b4090792c986cc5aaa, type: 3}
       propertyPath: pauseTime
       value: 1
       objectReference: {fileID: 0}

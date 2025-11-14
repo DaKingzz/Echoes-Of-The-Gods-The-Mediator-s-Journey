@@ -2,11 +2,10 @@ using UnityEngine;
 
 /// <summary>
 /// WalkingEnemy
-/// Minimal two-point walker with optional pause that reliably alternates A <-> B.
-/// - Subclass owns patrol toggling (PatrolEnemy no longer toggles).
-/// - If pauseEnabled: on arrival we idle for pauseTime, then switch to the other point and walk off.
-/// - If pauseDisabled: toggle immediately on arrival and continue to the other point.
-/// - Controls horizontal velocity only; preserves Rigidbody2D vertical velocity.
+/// Two-point walker that follows the player when in range, otherwise patrols between A and B.
+/// - Chase takes precedence over patrol (uses PatrolEnemy perception & memory).
+/// - Optional pause at patrol points (pauseEnabled / pauseTime).
+/// - Preserves Rigidbody2D vertical velocity; controls horizontal only.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class WalkingEnemy : PatrolEnemy
@@ -16,10 +15,10 @@ public class WalkingEnemy : PatrolEnemy
 
     [Tooltip("Pause time in seconds when the enemy reaches a patrol point. Ignored if pauseEnabled is false.")]
     [SerializeField]
-    private float pauseTime = 1f;
+    private float pauseTime = 0.6f;
 
     [Tooltip("Extra multiplier applied to movementSpeed while chasing.")] [SerializeField]
-    private float walkingChaseMultiplier = 1.0f;
+    private float walkingChaseMultiplier = 1.2f;
 
     // Pause bookkeeping
     private bool isPaused = false;
@@ -32,26 +31,41 @@ public class WalkingEnemy : PatrolEnemy
         if (rigidbody2D != null && Mathf.Approximately(rigidbody2D.gravityScale, 0f))
             rigidbody2D.gravityScale = 1f;
 
+        // Walkers should not ascend when avoiding
         allowAscendWhenBlocked = false;
     }
 
     protected override Vector2 DecideHighLevelDesiredVelocity()
     {
-        // If chasing, use base chase behavior and apply optional multiplier
-        if (lastKnownTargetPosition != Vector2.zero && (Time.fixedTime - lastSeenTimestamp) <= memoryDuration)
+        // --- CHASE logic: priority over patrol ---
+        // If the player is currently visible or remembered (within memoryDuration), chase.
+        bool currentlySeen = (Time.fixedTime - lastSeenTimestamp) <= memoryDuration &&
+                             lastKnownTargetPosition != Vector2.zero;
+        if (currentlySeen)
         {
-            Vector2 chase = base.DecideHighLevelDesiredVelocity();
-            if (chase == Vector2.zero) return Vector2.zero;
-            if (!Mathf.Approximately(walkingChaseMultiplier, 1f))
-                chase = chase.normalized * (chase.magnitude * walkingChaseMultiplier);
-            return chase;
+            // If target Transform is assigned and visible, prefer its current position; otherwise use lastKnownTargetPosition
+            Vector2 goal = (target != null)
+                ? (Vector2)target.position
+                : lastKnownTargetPosition;
+
+            // If we have a lastKnownTargetPosition but the base perception might have updated it,
+            // prefer lastKnownTargetPosition if the raycast check in UpdatePerception determined visibility.
+            // Use GetReachableGoal to get a reachable target near the player
+            Vector2 reachable = GetReachableGoal(goal);
+            Vector2 toGoal = reachable - rigidbody2D.position;
+            if (toGoal.sqrMagnitude <= 0.0001f)
+                return Vector2.zero;
+
+            // Use chase speed (movementSpeed * chaseSpeedMultiplier from base) and apply walking-specific multiplier
+            float baseChaseSpeed = movementSpeed * chaseSpeedMultiplier;
+            float finalSpeed = baseChaseSpeed * walkingChaseMultiplier;
+
+            if (animator != null) animator.SetBool(animatorHashIsWalking, true);
+
+            return toGoal.normalized * finalSpeed;
         }
 
-        // Otherwise simple two-point patrol with optional pause
-        if (!enablePatrol || patrolPointA == null || patrolPointB == null)
-            return Vector2.zero;
-
-        // If currently paused, check whether we should end the pause
+        // If currently paused (patrol) check whether we should end the pause
         if (isPaused)
         {
             if (!pauseEnabled || pauseTime <= 0f || Time.fixedTime - pauseStartTime >= pauseTime)
@@ -73,7 +87,11 @@ public class WalkingEnemy : PatrolEnemy
             }
         }
 
-        // Determine current point and distance to it (use exact patrol point for arrival detection)
+        // --- PATROL logic ---
+        if (!enablePatrol || patrolPointA == null || patrolPointB == null)
+            return Vector2.zero;
+
+        // Determine current patrol target
         Transform currentTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
         Vector2 pointPos = (Vector2)currentTarget.position;
         Vector2 toPoint = pointPos - rigidbody2D.position;
@@ -93,7 +111,7 @@ public class WalkingEnemy : PatrolEnemy
             }
             else
             {
-                // immediate toggle and continue to the other point
+                // Immediate toggle and continue to other point
                 currentPatrolIndex = 1 - currentPatrolIndex;
                 currentTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
                 pointPos = (Vector2)currentTarget.position;
@@ -101,8 +119,8 @@ public class WalkingEnemy : PatrolEnemy
         }
 
         // Move toward reachable goal for the selected current target
-        Vector2 reachable = GetReachableGoal(pointPos);
-        Vector2 toReachable = reachable - rigidbody2D.position;
+        Vector2 reachablePoint = GetReachableGoal(pointPos);
+        Vector2 toReachable = reachablePoint - rigidbody2D.position;
         if (toReachable.sqrMagnitude <= 0.0001f)
         {
             if (animator != null) animator.SetBool(animatorHashIsWalking, false);
@@ -123,6 +141,7 @@ public class WalkingEnemy : PatrolEnemy
     protected override Vector2 ApplyAvoidanceIfNeeded(Vector2 desired)
     {
         Vector2 blended = base.ApplyAvoidanceIfNeeded(desired);
+        // Preserve physics vertical velocity for walkers
         blended.y = rigidbody2D.velocity.y;
         if (float.IsNaN(blended.x) || float.IsInfinity(blended.x)) blended.x = desired.x;
         return blended;
