@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5593851190209960007}
   - component: {fileID: 7843820721214683668}
   - component: {fileID: 9146668286816882594}
-  - component: {fileID: 4046149194574793611}
+  - component: {fileID: 6657484908982459704}
   m_Layer: 0
   m_Name: PatrolEnemy
   m_TagString: Untagged
@@ -171,7 +171,7 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 0.59, y: 0.61}
   m_Direction: 0
---- !u!114 &4046149194574793611
+--- !u!114 &6657484908982459704
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -180,24 +180,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1262868742029137443}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ebabad86e10efe489f7143cc06060cb, type: 3}
+  m_Script: {fileID: 11500000, guid: a6d87612be9b81e4eb00124c02d1c864, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 3
   acceleration: 10
   enablePatrol: 1
-  patrolPointA: {fileID: 4661516327986102309}
-  patrolPointB: {fileID: 8240968240471792804}
-  patrolPointThreshold: 0.1
+  patrolPointA: {fileID: 6930607670287102058}
+  patrolPointB: {fileID: 3939274484192943359}
+  patrolPointThreshold: 1
   target: {fileID: 0}
-  chaseRadius: 5
-  extendedVisionBonus: 3
+  chaseRadius: 12
+  extendedVisionBonus: 8
   memoryDuration: 2
   chaseSpeedMultiplier: 1.5
   preferredVerticalSeparation: 1
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
   candidateRadius: 2
   candidateRings: 3
   candidatePerRing: 8
@@ -206,11 +206,15 @@ MonoBehaviour:
   avoidanceRayCount: 5
   avoidanceRaySpreadDegrees: 60
   avoidanceStrength: 2
-  ascendWhenBlocked: 1
+  allowAscendWhenBlocked: 1
   ascendSpeedBias: 0.6
   maximumHealth: 15
-  walkingThreshold: 0.1
-  spriteFacesLeftByDefault: 1
+  defaultSpriteFacing: 0
+  rememberLastFacingWhileIdle: 1
+  idleFacingSpeedThreshold: 0.05
+  showDebugGizmos: 1
+  debugMaxCandidatePointsToDraw: 64
+  walkingChaseMultiplier: 1
 --- !u!1 &4304730285000851994
 GameObject:
   m_ObjectHideFlags: 0
@@ -240,12 +244,12 @@ Transform:
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 1
   m_Children:
+  - {fileID: 6930607670287102058}
+  - {fileID: 3939274484192943359}
   - {fileID: 1667355852505398739}
-  - {fileID: 4661516327986102309}
-  - {fileID: 8240968240471792804}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &6591714039240852939
+--- !u!1 &5463921136727503035
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -253,7 +257,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4661516327986102309}
+  - component: {fileID: 6930607670287102058}
   m_Layer: 0
   m_Name: PointA
   m_TagString: Untagged
@@ -261,22 +265,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4661516327986102309
+--- !u!4 &6930607670287102058
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6591714039240852939}
+  m_GameObject: {fileID: 5463921136727503035}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.49, y: 0, z: 0}
+  m_LocalPosition: {x: -2.02, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4283426168434050402}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8221032690752927587
+--- !u!1 &8544637021878625079
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -284,7 +288,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8240968240471792804}
+  - component: {fileID: 3939274484192943359}
   m_Layer: 0
   m_Name: PointB
   m_TagString: Untagged
@@ -292,16 +296,16 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8240968240471792804
+--- !u!4 &3939274484192943359
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8221032690752927587}
+  m_GameObject: {fileID: 8544637021878625079}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.13, y: 0, z: 0}
+  m_LocalPosition: {x: 1.86, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

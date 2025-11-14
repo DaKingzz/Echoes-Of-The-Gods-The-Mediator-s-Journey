@@ -12,6 +12,9 @@ using UnityEngine;
 /// - Uses SpriteRenderer.flipX (safer than localScale inversion)
 /// - Exposes inspector option DefaultSpriteFacing to indicate whether the art faces Left or Right by default
 /// - Remembers last facing direction so idle sprites keep their last orientation
+/// 
+/// NOTE: Patrol toggling (switching currentPatrolIndex) has been removed from the base.
+/// Subclasses that implement patrol behavior (e.g., WalkingEnemy) must manage toggling/hysteresis themselves.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class PatrolEnemy : MonoBehaviour, IEnemy
@@ -284,6 +287,7 @@ public abstract class PatrolEnemy : MonoBehaviour, IEnemy
     /// Decide the high-level desired velocity vector based on patrol/chase logic.
     /// This uses lastKnownTargetPosition and memory window to determine chasing state.
     /// It returns a raw desired vector (magnitude indicates desired speed).
+    /// NOTE: This method no longer toggles currentPatrolIndex for patrols - subclasses must do so.
     /// </summary>
     protected virtual Vector2 DecideHighLevelDesiredVelocity()
     {
@@ -320,22 +324,17 @@ public abstract class PatrolEnemy : MonoBehaviour, IEnemy
             return toGoal.normalized * (movementSpeed * chaseSpeedMultiplier);
         }
 
-        // Patrol behavior (two-point) if enabled
+        // Patrol behavior (two-point) if enabled — DO NOT TOGGLE HERE: child classes manage toggling/hysteresis
         if (enablePatrol && patrolPointA != null && patrolPointB != null)
         {
-            Transform left = patrolPointA;
-            Transform right = patrolPointB;
-
-            Vector2 goal = (currentPatrolIndex == 0) ? (Vector2)left.position : (Vector2)right.position;
+            Transform targetPoint = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
+            Vector2 goal = (Vector2)targetPoint.position;
             Vector2 reachable = GetReachableGoal(goal);
             Vector2 toGoal = reachable - rigidbody2D.position;
 
-            if (toGoal.sqrMagnitude <= patrolPointThreshold * patrolPointThreshold)
-            {
-                // toggle patrol index when reaching point
-                currentPatrolIndex = 1 - currentPatrolIndex;
-            }
-
+            float threshSqr = patrolPointThreshold * patrolPointThreshold;
+            if (toGoal.sqrMagnitude <= threshSqr)
+                return Vector2.zero; // arrived: allow subclass to detect arrival and toggle
             return toGoal.normalized * movementSpeed;
         }
 
@@ -469,7 +468,7 @@ public abstract class PatrolEnemy : MonoBehaviour, IEnemy
     #region Movement model (abstract)
 
     /// <summary>
-    /// Subclasses implement this to convert the high-level desired vector into a movement-model-appropriate desired vector.
+    /// Subclasses implement this to convert the high-level desired vector into a movement-model-appropriate vector.
     /// Examples:
     /// - FlyingEnemy: return desired as-is (2D velocity).
     /// - WalkingEnemy: control only X component and preserve rigidbody2D.velocity.y.
