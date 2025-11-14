@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4759906440543809129}
   - component: {fileID: 9173306734837326367}
   - component: {fileID: -933271739459964310}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -271,14 +271,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa1a46758c0d8024bbbc78427ddd64fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 10
+  maximumHealth: 10
   movementSpeed: 10
-  runMultiplier: 2
-  initialJumpForce: 20
-  sustainedJumpForce: 15
-  sustainedJumpDuration: 5
-  gravityScale: 3
+  runSpeedMultiplier: 1.5
+  initialJumpVelocity: 10
+  sustainedJumpAcceleration: 50
+  sustainedJumpMaximumDuration: 2
+  baseGravityScale: 3
   fallGravityMultiplier: 4
+  groundedVerticalVelocityThreshold: 0.05
+  groundedStabilityTime: 0.02
 --- !u!95 &-933271739459964310
 Animator:
   serializedVersion: 5
