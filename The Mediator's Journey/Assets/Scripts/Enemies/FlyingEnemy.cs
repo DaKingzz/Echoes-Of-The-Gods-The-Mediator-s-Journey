@@ -2,10 +2,10 @@ using UnityEngine;
 
 /// <summary>
 /// FlyingEnemy
-/// Moves freely in 2D and correctly alternates patrolPointA ↔ patrolPointB.
-/// - Patrol toggling moved into this subclass (base no longer toggles).
-/// - Supports optional pause at each patrol point and an exit margin to avoid immediate re-toggles.
-/// - Still prefers chase behavior when a target is remembered/seen (delegates chase to base).
+/// - Full 2D mover that chases player when seen/remembered (delegates chase goal to base).
+/// - Implements its own A <-> B patrol toggling (base no longer toggles).
+/// - Optional pause at patrol points (pauseEnabled / pauseTime).
+/// - Uses animator triggers for events and sets PatrolEnemy.forceIdle while paused so parent drives isWalking.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class FlyingEnemy : PatrolEnemy
@@ -20,23 +20,17 @@ public class FlyingEnemy : PatrolEnemy
     [SerializeField]
     private float extraChaseSpeedMultiplier = 1.0f;
 
-    [Tooltip("Pause time in seconds when the enemy reaches a patrol point. Set to 0 for no pause.")] [SerializeField]
-    private float pauseTime = 0.0f;
+    [Tooltip("Enable a short pause when reaching a patrol point.")] [SerializeField]
+    private bool pauseEnabled = false;
 
-    [Tooltip(
-        "Small world-space margin (units) the enemy must exit beyond the patrolPointThreshold after leaving a point to allow next arrival.")]
+    [Tooltip("Pause time in seconds when the enemy reaches a patrol point. Ignored if pauseEnabled is false.")]
     [SerializeField]
-    private float exitDistanceMargin = 0.15f;
+    private float pauseTime = 0.5f;
 
-    // Patrol state machine
-    private enum PatrolState
-    {
-        Moving,
-        Paused
-    }
-
-    private PatrolState patrolState = PatrolState.Moving;
-    private float stateStartTime = -Mathf.Infinity;
+    // simple patrol pause state
+    private bool isPaused = false;
+    private float pauseStartTime = -Mathf.Infinity;
+    private int nextPatrolIndex = -1;
 
     // cached rigidbody (convenience)
     private Rigidbody2D rb2d;
@@ -44,7 +38,6 @@ public class FlyingEnemy : PatrolEnemy
     protected override void OnAwakeCustomInit()
     {
         rb2d = GetComponent<Rigidbody2D>();
-
         if (rb2d != null)
         {
             rb2d.gravityScale = 0f;
@@ -54,97 +47,105 @@ public class FlyingEnemy : PatrolEnemy
         if (fireballAttack == null)
             fireballAttack = GetComponent<EnemyFireballAttack>();
 
+        // Flying enemies allow ascending in avoidance
         allowAscendWhenBlocked = true;
     }
 
     /// <summary>
-    /// Prefer chase when a remembered target exists; otherwise run patrol state machine
-    /// that toggles currentPatrolIndex A↔B and optionally pauses at points.
+    /// Decide high-level desired velocity:
+    /// - If chasing (player seen/remembered) use base chase logic and apply extra multiplier.
+    /// - Otherwise run simple two-point patrol with optional pause; toggle currentPatrolIndex here.
     /// </summary>
     protected override Vector2 DecideHighLevelDesiredVelocity()
     {
-        // If chasing (base can compute chase vector toward lastKnownTargetPosition), use it.
+        // Clear any animator override by default; children set forceIdle when they want to force idle.
+        forceIdle = false;
+        animatorSpeedOverride = float.NaN;
+
+        // --- CHASE priority ---
         bool isChasing = lastKnownTargetPosition != Vector2.zero &&
                          (Time.fixedTime - lastSeenTimestamp) <= memoryDuration;
         if (isChasing)
         {
+            // Use base to compute chase vector toward the remembered/seen position
             Vector2 chase = base.DecideHighLevelDesiredVelocity();
             if (chase != Vector2.zero && !Mathf.Approximately(extraChaseSpeedMultiplier, 1f))
                 chase = chase.normalized * (chase.magnitude * extraChaseSpeedMultiplier);
 
-            // Attempt attack when remembered target exists
-            if (fireballAttack != null && fireballAttack.TryAttack() && animator != null)
-                animator.SetTrigger(animatorHashIsAttacking);
+            // Attempt attack (children trigger animator event)
+            if (fireballAttack != null && fireballAttack.TryAttack())
+            {
+                if (animator != null) animator.SetTrigger(animatorHashIsAttacking);
+            }
 
             return chase;
         }
 
-        // Not chasing: handle explicit patrol A <-> B toggling
+        // --- PATROL fallback (this subclass manages toggling) ---
         if (!enablePatrol || patrolPointA == null || patrolPointB == null)
             return Vector2.zero;
 
-        Transform currentTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
-        Vector2 targetPos = (Vector2)currentTarget.position;
-        Vector2 reachable = GetReachableGoal(targetPos);
-        Vector2 toTarget = reachable - rigidbody2D.position;
-
-        float threshSqr = patrolPointThreshold * patrolPointThreshold;
-        float exitSqr = (patrolPointThreshold + exitDistanceMargin) * (patrolPointThreshold + exitDistanceMargin);
-
-        // MOVING state: move toward current target; on arrival switch to PAUSED (or toggle immediately if no pause)
-        if (patrolState == PatrolState.Moving)
+        // If currently paused, check whether to finish the pause
+        if (isPaused)
         {
-            if (toTarget.sqrMagnitude > threshSqr)
+            if (!pauseEnabled || pauseTime <= 0f || Time.fixedTime - pauseStartTime >= pauseTime)
             {
-                if (animator != null) animator.SetBool(animatorHashIsWalking, true);
-                return toTarget.normalized * movementSpeed;
-            }
+                // commit next index and resume moving
+                if (nextPatrolIndex >= 0)
+                {
+                    currentPatrolIndex = nextPatrolIndex;
+                    nextPatrolIndex = -1;
+                }
 
-            // Arrived
-            patrolState = PatrolState.Paused;
-            stateStartTime = Time.fixedTime;
-            if (animator != null) animator.SetBool(animatorHashIsWalking, false);
-
-            if (pauseTime <= 0f)
-            {
-                // No pause requested: toggle immediately and start moving toward the other point
-                TogglePatrolIndex();
-                patrolState = PatrolState.Moving;
-                stateStartTime = Time.fixedTime;
+                isPaused = false;
+                forceIdle = false;
             }
             else
             {
-                // Pausing now
+                // still pausing: instruct parent to set isWalking = false and do nothing else
+                forceIdle = true;
                 return Vector2.zero;
             }
         }
 
-        // PAUSED state: wait until pauseTime elapsed AND the enemy has moved sufficiently away before allowing another toggle
-        if (patrolState == PatrolState.Paused)
+        // Compute vector toward current patrol point
+        Transform currentTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
+        Vector2 pointPos = (Vector2)currentTarget.position;
+        Vector2 toPoint = pointPos - rigidbody2D.position;
+        float threshSqr = patrolPointThreshold * patrolPointThreshold;
+
+        // If within threshold, either start pause or toggle immediately
+        if (toPoint.sqrMagnitude <= threshSqr)
         {
-            // If still within pause window, remain idle
-            if (Time.fixedTime - stateStartTime < pauseTime)
-                return Vector2.zero;
-
-            // After pause elapsed: ensure we toggle to the other point only if we are still within arrival threshold.
-            // This prevents double toggles if we already toggled immediately earlier.
-            if (toTarget.sqrMagnitude <= threshSqr)
+            if (pauseEnabled && pauseTime > 0f)
             {
-                TogglePatrolIndex();
+                isPaused = true;
+                pauseStartTime = Time.fixedTime;
+                nextPatrolIndex = 1 - currentPatrolIndex;
+                forceIdle = true; // parent will set isWalking = false
+                return Vector2.zero;
             }
-
-            patrolState = PatrolState.Moving;
-            if (animator != null) animator.SetBool(animatorHashIsWalking, true);
+            else
+            {
+                // immediate toggle and continue toward the other point this frame
+                currentPatrolIndex = 1 - currentPatrolIndex;
+                currentTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
+                pointPos = (Vector2)currentTarget.position;
+            }
         }
 
-        // Compute movement toward (possibly toggled) current target
-        Transform nextTarget = (currentPatrolIndex == 0) ? patrolPointA : patrolPointB;
-        if (nextTarget == null) return Vector2.zero;
-        Vector2 nextReachable = GetReachableGoal((Vector2)nextTarget.position);
-        Vector2 toNext = nextReachable - rigidbody2D.position;
-        if (toNext.sqrMagnitude <= 0.0001f) return Vector2.zero;
+        // Move toward reachable goal for the selected current target
+        Vector2 reachable = GetReachableGoal(pointPos);
+        Vector2 toReachable = reachable - rigidbody2D.position;
+        if (toReachable.sqrMagnitude <= 0.0001f)
+        {
+            return Vector2.zero;
+        }
 
-        return toNext.normalized * movementSpeed;
+        // Optionally inform animator speed override (useful if you want parent to consider it)
+        animatorSpeedOverride = toReachable.magnitude;
+
+        return toReachable.normalized * movementSpeed;
     }
 
     protected override Vector2 ComputeMovementVelocity(Vector2 desiredHighLevel)
@@ -164,11 +165,5 @@ public class FlyingEnemy : PatrolEnemy
     {
         if (animator != null) animator.SetTrigger(animatorHashIsHit);
         return base.TakeDamage(amount);
-    }
-
-    // Simple toggle helper
-    private void TogglePatrolIndex()
-    {
-        currentPatrolIndex = 1 - currentPatrolIndex;
     }
 }

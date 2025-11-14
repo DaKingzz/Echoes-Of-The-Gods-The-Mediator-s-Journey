@@ -12,9 +12,11 @@ using UnityEngine;
 /// - Uses SpriteRenderer.flipX (safer than localScale inversion)
 /// - Exposes inspector option DefaultSpriteFacing to indicate whether the art faces Left or Right by default
 /// - Remembers last facing direction so idle sprites keep their last orientation
-/// 
-/// NOTE: Patrol toggling (switching currentPatrolIndex) has been removed from the base.
-/// Subclasses that implement patrol behavior (e.g., WalkingEnemy) must manage toggling/hysteresis themselves.
+///
+/// Animator responsibilities:
+/// - PatrolEnemy is the single writer of continuous animator variables such as isWalking and flipX.
+/// - Child classes may set the protected signals (forceIdle, animatorSpeedOverride) to influence animation state.
+/// - Child classes continue to call animator triggers for one-shot events (isHit, isAttacking).
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class PatrolEnemy : MonoBehaviour, IEnemy
@@ -180,6 +182,17 @@ public abstract class PatrolEnemy : MonoBehaviour, IEnemy
 
     // Facing state remembered for idle facing
     protected bool lastFacingRight = true;
+
+    #endregion
+
+    #region Animator control signals for children
+
+    // Children can set these protected signals to influence how the parent writes animator state.
+    // - forceIdle: when true the parent will write isWalking = false regardless of velocity.
+    // - animatorSpeedOverride: if set to a finite number, the parent can use it to decide isWalking or other speed-based params.
+    // Children should NOT directly call animator.SetBool(animatorHashIsWalking, ...); use these signals instead.
+    protected bool forceIdle = false;
+    protected float animatorSpeedOverride = float.NaN; // NaN means "no override"
 
     #endregion
 
@@ -497,13 +510,34 @@ public abstract class PatrolEnemy : MonoBehaviour, IEnemy
     /// Default visual and animator updates. Handles sprite flipping using SpriteRenderer.flipX.
     /// flipX is set so the final visible direction matches movement direction, taking into account
     /// the default sprite facing (Left or Right). Idle facing is optionally remembered.
+    ///
+    /// Continuous animator variables (like isWalking) are written only here. Children can set
+    /// forceIdle and animatorSpeedOverride to affect how this method decides "isWalking".
+    /// Children should still use animator.SetTrigger for one-shot events (isHit, isAttacking).
     /// </summary>
     protected virtual void UpdateVisualsAndAnimator()
     {
-        // Animator walking flag
         if (animator != null)
         {
-            bool isWalking = Mathf.Abs(rigidbody2D.velocity.x) > 0.1f || Mathf.Abs(rigidbody2D.velocity.y) > 0.1f;
+            // Determine isWalking with parent-owned single-source-of-truth logic.
+            bool isWalking;
+
+            // Respect explicit child override to force idle.
+            if (forceIdle)
+            {
+                isWalking = false;
+            }
+            // If a speed override is provided (finite), use it to decide walking state.
+            else if (!float.IsNaN(animatorSpeedOverride))
+            {
+                isWalking = Mathf.Abs(animatorSpeedOverride) > 0.01f;
+            }
+            else
+            {
+                // Default: consider the physics velocity
+                isWalking = Mathf.Abs(rigidbody2D.velocity.x) > 0.1f || Mathf.Abs(rigidbody2D.velocity.y) > 0.1f;
+            }
+
             animator.SetBool(animatorHashIsWalking, isWalking);
         }
 

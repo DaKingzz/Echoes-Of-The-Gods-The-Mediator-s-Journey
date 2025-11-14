@@ -98,7 +98,7 @@ Animator:
   m_GameObject: {fileID: 1262868742029137443}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 8229c1dd03dc9d64aa8180315c02e7d0, type: 2}
+  m_Controller: {fileID: 9100000, guid: 311d29405fad2b34f8d5b50800689fc3, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -214,6 +214,8 @@ MonoBehaviour:
   idleFacingSpeedThreshold: 0.05
   showDebugGizmos: 1
   debugMaxCandidatePointsToDraw: 64
+  pauseEnabled: 1
+  pauseTime: 0.6
   walkingChaseMultiplier: 1
 --- !u!1 &4304730285000851994
 GameObject:
