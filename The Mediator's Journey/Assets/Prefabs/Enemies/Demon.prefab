@@ -109,7 +109,7 @@ GameObject:
   - component: {fileID: 4787431950628477590}
   - component: {fileID: 6286153782112449913}
   - component: {fileID: 7883655169494138751}
-  - component: {fileID: 6980242358776574329}
+  - component: {fileID: 813685545383101709}
   - component: {fileID: 871618573698329791}
   m_Layer: 11
   m_Name: PatrollingEnemy
@@ -268,7 +268,7 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.41
---- !u!114 &6980242358776574329
+--- !u!114 &813685545383101709
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7771235776015172694}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ebabad86e10efe489f7143cc06060cb, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c255671cf63e664fba7569fa1531ddf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 3
@@ -287,15 +287,15 @@ MonoBehaviour:
   patrolPointB: {fileID: 1220161088188682589}
   patrolPointThreshold: 0.1
   target: {fileID: 0}
-  chaseRadius: 15
-  extendedVisionBonus: 7
+  chaseRadius: 10
+  extendedVisionBonus: 3
   memoryDuration: 2
-  chaseSpeedMultiplier: 1.4
+  chaseSpeedMultiplier: 1.5
   preferredVerticalSeparation: 1
   obstacleMask:
     serializedVersion: 2
     m_Bits: 0
-  candidateRadius: 10
+  candidateRadius: 2
   candidateRings: 3
   candidatePerRing: 8
   candidateUpBias: 0.5
@@ -303,11 +303,13 @@ MonoBehaviour:
   avoidanceRayCount: 5
   avoidanceRaySpreadDegrees: 60
   avoidanceStrength: 2
-  ascendWhenBlocked: 1
+  allowAscendWhenBlocked: 1
   ascendSpeedBias: 0.6
   maximumHealth: 15
-  walkingThreshold: 0.1
-  spriteFacesLeftByDefault: 1
+  showDebugGizmos: 1
+  debugMaxCandidatePointsToDraw: 64
+  fireballAttack: {fileID: 0}
+  extraChaseSpeedMultiplier: 1
 --- !u!114 &871618573698329791
 MonoBehaviour:
   m_ObjectHideFlags: 0
