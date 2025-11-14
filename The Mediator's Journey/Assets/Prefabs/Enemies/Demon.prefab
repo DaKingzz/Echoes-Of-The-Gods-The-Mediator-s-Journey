@@ -280,33 +280,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ebabad86e10efe489f7143cc06060cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3
-  accel: 10
-  patrol: 1
-  pointA: {fileID: 6909975827866226275}
-  pointB: {fileID: 1220161088188682589}
-  pointThreshold: 0.1
+  movementSpeed: 3
+  acceleration: 10
+  enablePatrol: 1
+  patrolPointA: {fileID: 6909975827866226275}
+  patrolPointB: {fileID: 1220161088188682589}
+  patrolPointThreshold: 0.1
   target: {fileID: 0}
-  chaseRange: 5
-  chaseRangeBonus: 3
-  memoryTime: 2
-  chaseSpeedMultiplier: 1.5
+  chaseRadius: 15
+  extendedVisionBonus: 7
+  memoryDuration: 2
+  chaseSpeedMultiplier: 1.4
   preferredVerticalSeparation: 1
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 128
-  candidateRadius: 2
+    m_Bits: 0
+  candidateRadius: 10
   candidateRings: 3
   candidatePerRing: 8
   candidateUpBias: 0.5
-  avoidRayDistance: 1
-  avoidRayCount: 5
-  avoidRayAngle: 60
-  avoidStrength: 2
+  avoidanceRayDistance: 1
+  avoidanceRayCount: 5
+  avoidanceRaySpreadDegrees: 60
+  avoidanceStrength: 2
   ascendWhenBlocked: 1
   ascendSpeedBias: 0.6
-  walkThreshold: 0.1
-  maxHealth: 15
+  maximumHealth: 15
+  walkingThreshold: 0.1
+  spriteFacesLeftByDefault: 1
 --- !u!114 &871618573698329791
 MonoBehaviour:
   m_ObjectHideFlags: 0
