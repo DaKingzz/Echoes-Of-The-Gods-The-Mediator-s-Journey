@@ -33,7 +33,7 @@ public class SwordWeapon : MonoBehaviour
         if (!IsAttacking) return;
 
         // Check if collider is on the enemy layer
-        if (((1 << other.gameObject.layer) & enemyMask) == 0) return;
+        if (((1 << other.gameObject.layer) & enemyMask) == 0)return;
 
         // Only hit once per attack
         if (hitThisAttack.Contains(other)) return;
