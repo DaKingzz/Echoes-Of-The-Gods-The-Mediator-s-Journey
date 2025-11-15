@@ -4,14 +4,11 @@ using UnityEngine;
 
 /// <summary>
 /// EnemyMeleeAttackAnimDriven
-/// - Starts windup when a player enters the attackArea trigger.
-/// - After windup it fires a cached animator trigger to play the attack animation.
-/// - The animation must call OnAttackHitFrame() at the frame when the weapon is extended,
-///   and OnAttackEndFrame() at the frame when the attack window closes.
-/// - OnAttackHitFrame applies damage to any IPlayer currently inside the attackArea.
-/// - Damage, timings and the attackArea trigger are configurable in the inspector.
-/// - Uses a cached animator parameter id: IsAttacking.
-/// - Optionally repeats attacks while the player remains inside the trigger (repeatWhileInside).
+/// - Trigger-driven melee component that decides attacks itself (no external calls).
+/// - Starts windup when a player enters the attackArea trigger; animation must call OnAttackHitFrame and OnAttackEndFrame.
+/// - Uses a cached animator hash (IsAttacking) and robust trigger handling that finds IPlayer on children/parents.
+/// - Mirrors the attackArea automatically when the visual flips (detects facing via SpriteRenderer.flipX or transform.localScale.x).
+/// - Optionally repeats attacks while the player remains inside and optionally cancels windup if all leave.
 /// </summary>
 [DisallowMultipleComponent]
 public class EnemyMeleeAttackAnimDriven : MonoBehaviour
@@ -19,14 +16,14 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
     [Header("Timing")] [Tooltip("Windup time from player entering until animation trigger.")] [SerializeField]
     private float windupDelay = 0.35f;
 
-    [Tooltip("Minimum time between attacks.")] [SerializeField]
+    [Tooltip("Minimum time between completed attacks.")] [SerializeField]
     private float attackCooldown = 1.0f;
 
     [Header("Damage")] [Tooltip("Damage applied to the player when hit.")] [SerializeField]
     private float damage = 5f;
 
     [Header("Attack Area (trigger)")]
-    [Tooltip("Trigger collider that represents reach of the attack. Should be IsTrigger = true.")]
+    [Tooltip("Trigger collider that represents reach of the attack. Should be IsTrigger = true and enabled.")]
     [SerializeField]
     private Collider2D attackArea;
 
@@ -49,58 +46,241 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
     [SerializeField]
     private bool repeatWhileInside = true;
 
+    [Header("Facing / Mirroring")]
+    [Tooltip(
+        "Optional SpriteRenderer to detect facing via flipX. If null the script falls back to checking transform.localScale.x.")]
+    [SerializeField]
+    private SpriteRenderer spriteRendererForFacing;
+
+    [Tooltip("If your art faces right by default set true; if it faces left by default set false.")] [SerializeField]
+    private bool artFacesRightByDefault = true;
+
+    [Header("Debug")]
+    [Tooltip("When enabled, logs trigger hits and facing/mirroring changes (editor-only).")]
+    [SerializeField]
+    private bool debugLogs = false;
+
     private const string playerTag = "Player";
 
     // runtime state
     private readonly HashSet<IPlayer> playersInside = new HashSet<IPlayer>();
     private volatile bool isWindingUp = false;
     private float lastAttackTime = -Mathf.Infinity;
-
-    // prevents multiple concurrent restart waiters
     private bool awaitingNextAttack = false;
+
+    // Facing tracking
+    private bool lastFacingRight = true;
+
+    // Cache original offsets/positions for symmetric mirroring
+    private float originalColliderOffsetX = float.NaN; // used if collider is on same transform
+    private float originalChildLocalPosX = float.NaN; // used if attackArea is on a child transform
+    private bool attackAreaIsChild = false;
 
     private void Reset()
     {
         if (attackArea == null) attackArea = GetComponentInChildren<Collider2D>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (spriteRendererForFacing == null) spriteRendererForFacing = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Awake()
     {
         if (attackArea == null)
-            Debug.LogError($"{nameof(EnemyMeleeAttackAnimDriven)} requires an attackArea trigger Collider2D.");
-
-        if (attackArea != null && !attackArea.isTrigger)
+        {
+            Debug.LogError($"{nameof(EnemyMeleeAttackAnimDriven)} requires an attackArea trigger Collider2D.", this);
+        }
+        else if (!attackArea.isTrigger)
+        {
             Debug.LogWarning(
-                $"{nameof(EnemyMeleeAttackAnimDriven)}: attackArea should be a trigger collider (IsTrigger = true).");
+                $"{nameof(EnemyMeleeAttackAnimDriven)}: attackArea should be a trigger collider (IsTrigger = true).",
+                this);
+        }
 
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (spriteRendererForFacing == null) spriteRendererForFacing = GetComponentInChildren<SpriteRenderer>();
+
+        // Determine how attackArea is attached and cache original offsets/positions
+        if (attackArea != null)
+        {
+            attackAreaIsChild = attackArea.transform != this.transform;
+            if (attackAreaIsChild)
+            {
+                originalChildLocalPosX = attackArea.transform.localPosition.x;
+            }
+            else
+            {
+                if (attackArea is BoxCollider2D box)
+                    originalColliderOffsetX = box.offset.x;
+                else if (attackArea is CircleCollider2D circ)
+                    originalColliderOffsetX = circ.offset.x;
+                else
+                    originalColliderOffsetX = attackArea.offset.x;
+            }
+        }
+
+        // Initialize facing and ensure collider is positioned accordingly
+        lastFacingRight = GetCurrentFacingRight();
+        ApplyMirrorForFacing(lastFacingRight);
     }
 
+    private void Update()
+    {
+        bool facingRight = GetCurrentFacingRight();
+        if (facingRight != lastFacingRight)
+        {
+            lastFacingRight = facingRight;
+            ApplyMirrorForFacing(facingRight);
+            if (debugLogs)
+                Debug.Log($"[EnemyMeleeAttack] Facing changed. Now facingRight={facingRight}. Applied mirror.", this);
+        }
+    }
+
+    private bool GetCurrentFacingRight()
+    {
+        if (spriteRendererForFacing != null)
+        {
+            bool spriteShowsRight = !spriteRendererForFacing.flipX;
+            return artFacesRightByDefault ? spriteShowsRight : !spriteShowsRight;
+        }
+        else
+        {
+            bool scalePositive = transform.localScale.x >= 0f;
+            return artFacesRightByDefault ? scalePositive : !scalePositive;
+        }
+    }
+
+    private void ApplyMirrorForFacing(bool facingRight)
+    {
+        if (attackArea == null) return;
+        float sign = facingRight ? +1f : -1f;
+
+        if (attackAreaIsChild)
+        {
+            Vector3 lp = attackArea.transform.localPosition;
+            float absX = float.IsNaN(originalChildLocalPosX) ? Mathf.Abs(lp.x) : Mathf.Abs(originalChildLocalPosX);
+            lp.x = absX * sign;
+            attackArea.transform.localPosition = lp;
+        }
+        else
+        {
+            if (attackArea is BoxCollider2D box)
+            {
+                Vector2 off = box.offset;
+                float abs = float.IsNaN(originalColliderOffsetX)
+                    ? Mathf.Abs(off.x)
+                    : Mathf.Abs(originalColliderOffsetX);
+                off.x = abs * sign;
+                box.offset = off;
+            }
+            else if (attackArea is CircleCollider2D circ)
+            {
+                Vector2 off = circ.offset;
+                float abs = float.IsNaN(originalColliderOffsetX)
+                    ? Mathf.Abs(off.x)
+                    : Mathf.Abs(originalColliderOffsetX);
+                off.x = abs * sign;
+                circ.offset = off;
+            }
+            else
+            {
+                Vector2 off = attackArea.offset;
+                float abs = float.IsNaN(originalColliderOffsetX)
+                    ? Mathf.Abs(off.x)
+                    : Mathf.Abs(originalColliderOffsetX);
+                off.x = abs * sign;
+                attackArea.offset = off;
+            }
+        }
+    }
+
+    // Robust trigger enter that finds IPlayer on collider's parents/children and accepts tag on parent roots
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag)) return;
-        var p = other.GetComponentInParent<IPlayer>();
-        if (p == null) return;
+        if (other == null) return;
 
+        // Preferred: component implementing IPlayer somewhere in parents
+        var player = other.GetComponentInParent<IPlayer>();
+        if (player != null)
+        {
+            AddPlayerInside(player);
+            if (debugLogs)
+                Debug.Log($"[EnemyMeleeAttack] TriggerEnter found IPlayer on '{other.name}' -> added.", this);
+            return;
+        }
+
+        // Fallback: tag might be on a parent; search upwards for a tagged transform and then for an IPlayer under it
+        Transform t = other.transform;
+        while (t != null)
+        {
+            if (t.CompareTag(playerTag))
+            {
+                var p = t.GetComponentInChildren<IPlayer>();
+                if (p != null)
+                {
+                    AddPlayerInside(p);
+                    if (debugLogs)
+                        Debug.Log($"[EnemyMeleeAttack] TriggerEnter found tag on parent '{t.name}' -> added player.",
+                            this);
+                    return;
+                }
+            }
+
+            t = t.parent;
+        }
+
+        if (debugLogs)
+            Debug.Log($"[EnemyMeleeAttack] TriggerEnter ignored '{other.name}' tag={other.tag} (no IPlayer found).",
+                this);
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other == null) return;
+
+        var player = other.GetComponentInParent<IPlayer>();
+        if (player != null)
+        {
+            RemovePlayerInside(player);
+            if (debugLogs) Debug.Log($"[EnemyMeleeAttack] TriggerExit removed IPlayer from '{other.name}'.", this);
+            return;
+        }
+
+        Transform t = other.transform;
+        while (t != null)
+        {
+            if (t.CompareTag(playerTag))
+            {
+                var p = t.GetComponentInChildren<IPlayer>();
+                if (p != null)
+                {
+                    RemovePlayerInside(p);
+                    if (debugLogs)
+                        Debug.Log($"[EnemyMeleeAttack] TriggerExit removed player by parent tag '{t.name}'.", this);
+                    return;
+                }
+            }
+
+            t = t.parent;
+        }
+    }
+
+    private void AddPlayerInside(IPlayer p)
+    {
+        if (p == null) return;
         lock (playersInside)
         {
             playersInside.Add(p);
         }
 
-        // Start windup if not already in one and cooldown passed
         if (!isWindingUp && Time.time - lastAttackTime >= attackCooldown)
         {
             StartCoroutine(WindupCoroutine());
         }
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    private void RemovePlayerInside(IPlayer p)
     {
-        if (!other.CompareTag(playerTag)) return;
-        var p = other.GetComponentInParent<IPlayer>();
         if (p == null) return;
-
         lock (playersInside)
         {
             playersInside.Remove(p);
@@ -121,6 +301,7 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
                     if (playersInside.Count == 0)
                     {
                         isWindingUp = false;
+                        if (debugLogs) Debug.Log("[EnemyMeleeAttack] Windup cancelled because players left.", this);
                         yield break;
                     }
                 }
@@ -129,16 +310,13 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
             yield return null;
         }
 
-        // Trigger animator using cached hash
         if (animator != null)
             animator.SetTrigger(IsAttacking);
-
-        // Keep isWindingUp true until OnAttackEndFrame is called by animation event
     }
 
     /// <summary>
     /// Animation event: called on the frame where the weapon is extended.
-    /// Applies damage to any IPlayer currently inside the attackArea.
+    /// Applies damage to any IPlayer currently tracked as inside the attackArea.
     /// </summary>
     public void OnAttackHitFrame()
     {
@@ -151,10 +329,12 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
             playersInside.CopyTo(snapshot);
         }
 
+        if (debugLogs)
+            Debug.Log($"[EnemyMeleeAttack] OnAttackHitFrame applying damage to {snapshot.Length} players.", this);
+
         for (int i = 0; i < snapshot.Length; i++)
         {
-            var p = snapshot[i];
-            p?.TakeDamage(damage);
+            snapshot[i]?.TakeDamage(damage);
         }
     }
 
@@ -167,7 +347,6 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
         lastAttackTime = Time.time;
         isWindingUp = false;
 
-        // schedule another attempt after cooldown if requested and there are players inside
         if (repeatWhileInside)
         {
             bool hasPlayers;
@@ -187,16 +366,12 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
     {
         awaitingNextAttack = true;
 
-        // wait until cooldown expires (use lastAttackTime as reference)
-        float waitStart = Time.time;
         float target = lastAttackTime + attackCooldown;
-        // If lastAttackTime updated again externally, target will reflect the latest (we always wait until at least target)
         while (Time.time < target)
             yield return null;
 
         awaitingNextAttack = false;
 
-        // Start a new windup only if not currently winding and players are still inside
         if (!isWindingUp)
         {
             bool hasPlayers;

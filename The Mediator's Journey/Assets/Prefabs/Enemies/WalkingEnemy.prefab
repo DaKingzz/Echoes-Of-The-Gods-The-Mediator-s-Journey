@@ -231,12 +231,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 845671ccb9bf5da4b81f8cd1cb1d2c44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackDelay: 0.25
+  windupDelay: 0.35
   attackCooldown: 0.8
-  damage: 1
+  damage: 2
   attackArea: {fileID: 5623856451815288214}
   animator: {fileID: 5593851190209960007}
   cancelIfEmptyDuringWindup: 0
+  repeatWhileInside: 1
+  spriteRendererForFacing: {fileID: 0}
+  artFacesRightByDefault: 1
+  debugLogs: 0
 --- !u!1 &4304730285000851994
 GameObject:
   m_ObjectHideFlags: 0
