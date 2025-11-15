@@ -11,7 +11,7 @@ using UnityEngine;
 /// - Optionally repeats attacks while the player remains inside and optionally cancels windup if all leave.
 /// </summary>
 [DisallowMultipleComponent]
-public class EnemyMeleeAttackAnimDriven : MonoBehaviour
+public class EnemyMeleeAttack : MonoBehaviour
 {
     [Header("Timing")] [Tooltip("Windup time from player entering until animation trigger.")] [SerializeField]
     private float windupDelay = 0.35f;
@@ -85,17 +85,6 @@ public class EnemyMeleeAttackAnimDriven : MonoBehaviour
 
     private void Awake()
     {
-        if (attackArea == null)
-        {
-            Debug.LogError($"{nameof(EnemyMeleeAttackAnimDriven)} requires an attackArea trigger Collider2D.", this);
-        }
-        else if (!attackArea.isTrigger)
-        {
-            Debug.LogWarning(
-                $"{nameof(EnemyMeleeAttackAnimDriven)}: attackArea should be a trigger collider (IsTrigger = true).",
-                this);
-        }
-
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (spriteRendererForFacing == null) spriteRendererForFacing = GetComponentInChildren<SpriteRenderer>();
 
