@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,12 +17,32 @@ public class PlayerController : MonoBehaviour, IPlayer
     [SerializeField] private float runMultiplier = 1.5f;
 
     [Header("Jump Settings")] [SerializeField]
-    private float initialJumpForce = 8f; // burst at jump start
+    private float initialJumpForce = 8f;
 
-    [SerializeField] private float sustainedJumpForce = 5f; // extra force while holding
-    [SerializeField] private float sustainedJumpDuration = 0.25f; // how long extra force can be applied
+    [SerializeField] private float sustainedJumpForce = 5f;
+    [SerializeField] private float sustainedJumpDuration = 0.25f;
     [SerializeField] private float gravityScale = 3f;
     [SerializeField] private float fallGravityMultiplier = 2f;
+
+    [Header("Audio Sources")]
+    [Tooltip("AudioSource used for one-shot SFX like jump. Prefer non-looping AudioSource.")]
+    [SerializeField]
+    private AudioSource sfxSource;
+
+    [Tooltip(
+        "AudioSource used for looped walking/footstep sound. Prefer looping AudioSource or leave empty to let script manage it.")]
+    [SerializeField]
+    private AudioSource footstepsSource;
+
+    [Header("Audio Volumes (optional overrides)")] [Range(0f, 1f)] [SerializeField]
+    private float jumpSoundVolume = 1f;
+
+    [Range(0f, 1f)] [SerializeField] private float walkSoundVolume = 1f;
+
+    [Header("Walking Sound Settings")]
+    [Tooltip("Minimum horizontal input magnitude to consider the player 'walking'.")]
+    [SerializeField]
+    private float walkThreshold = 0.01f;
 
     private Rigidbody2D rigidBody2D;
     private Collider2D collider2D;
@@ -34,6 +56,14 @@ public class PlayerController : MonoBehaviour, IPlayer
     private bool isFacingRight = true;
 
     private float jumpStartTime;
+    private bool wasWalkingPlaying = false;
+
+    private void Reset()
+    {
+        // Add at least one AudioSource so designers can wire two if they want
+        if (GetComponents<AudioSource>().Length == 0)
+            gameObject.AddComponent<AudioSource>();
+    }
 
     private void Start()
     {
@@ -41,13 +71,46 @@ public class PlayerController : MonoBehaviour, IPlayer
         collider2D = GetComponent<Collider2D>();
         animator = GetComponent<Animator>();
 
+        // If designer didn't assign sources, try to auto-resolve:
+        AudioSource[] sources = GetComponents<AudioSource>();
+        if (sfxSource == null)
+        {
+            if (sources.Length >= 1) sfxSource = sources[0];
+            else sfxSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        if (footstepsSource == null)
+        {
+            if (sources.Length >= 2) footstepsSource = sources[1];
+            else if (sources.Length == 1) footstepsSource = gameObject.AddComponent<AudioSource>();
+            else footstepsSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // Configure defaults (don't force designers' choices but ensure sensible defaults)
+        if (sfxSource != null)
+        {
+            sfxSource.playOnAwake = false;
+            sfxSource.loop = false;
+        }
+
+        if (footstepsSource != null)
+        {
+            footstepsSource.playOnAwake = false;
+            // keep loop as configured by designer; we will ensure it's looping when playing
+        }
+
         rigidBody2D.gravityScale = gravityScale;
         currentHealth = maxHealth;
     }
 
     private void Update()
     {
-        animator.SetBool("isWalking", Mathf.Abs(movementInput.x) > 0.01f && isGrounded);
+        bool isWalkingNow = Mathf.Abs(movementInput.x) > walkThreshold && isGrounded;
+
+        if (animator != null)
+            animator.SetBool("isWalking", isWalkingNow);
+
+        UpdateWalkingSound(isWalkingNow);
 
         if (!isGrounded)
         {
@@ -55,25 +118,37 @@ public class PlayerController : MonoBehaviour, IPlayer
             {
                 if (Mathf.Abs(movementInput.x) > 0.01f)
                 {
-                    animator.SetBool("isJumpingRight", true);
-                    animator.SetBool("isJumpingForward", false);
+                    if (animator != null)
+                    {
+                        animator.SetBool("isJumpingRight", true);
+                        animator.SetBool("isJumpingForward", false);
+                    }
                 }
                 else
                 {
-                    animator.SetBool("isJumpingForward", true);
-                    animator.SetBool("isJumpingRight", false);
+                    if (animator != null)
+                    {
+                        animator.SetBool("isJumpingForward", true);
+                        animator.SetBool("isJumpingRight", false);
+                    }
                 }
             }
             else
             {
-                animator.SetBool("isJumpingForward", false);
-                animator.SetBool("isJumpingRight", false);
+                if (animator != null)
+                {
+                    animator.SetBool("isJumpingForward", false);
+                    animator.SetBool("isJumpingRight", false);
+                }
             }
         }
         else
         {
-            animator.SetBool("isJumpingForward", false);
-            animator.SetBool("isJumpingRight", false);
+            if (animator != null)
+            {
+                animator.SetBool("isJumpingForward", false);
+                animator.SetBool("isJumpingRight", false);
+            }
         }
     }
 
@@ -105,6 +180,21 @@ public class PlayerController : MonoBehaviour, IPlayer
         {
             rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, initialJumpForce);
             jumpStartTime = Time.time;
+
+            // Play jump SFX using the assigned sfxSource:
+            // Prefer PlayOneShot if a clip is assigned on the sfxSource (so it won't interrupt other one-shots),
+            // otherwise call Play() which will play the assigned clip on that source.
+            if (sfxSource != null)
+            {
+                if (sfxSource.clip != null)
+                {
+                    sfxSource.PlayOneShot(sfxSource.clip, jumpSoundVolume);
+                }
+                else
+                {
+                    sfxSource.Play();
+                }
+            }
         }
 
         // Sustained jump while holding
@@ -113,8 +203,7 @@ public class PlayerController : MonoBehaviour, IPlayer
             float elapsed = Time.time - jumpStartTime;
             if (elapsed < sustainedJumpDuration)
             {
-                // Apply diminishing upward force
-                float holdFactor = 1f - (elapsed / sustainedJumpDuration); // decreases from 1 to 0
+                float holdFactor = 1f - (elapsed / sustainedJumpDuration);
                 rigidBody2D.velocity += Vector2.up * (sustainedJumpForce * holdFactor * Time.fixedDeltaTime);
             }
         }
@@ -163,10 +252,36 @@ public class PlayerController : MonoBehaviour, IPlayer
         transform.localScale = localScale;
     }
 
+    // -------- Walking sound helper --------
+    private void UpdateWalkingSound(bool shouldPlay)
+    {
+        if (footstepsSource == null) return;
+
+        // keep volume in sync with inspector override
+        footstepsSource.volume = walkSoundVolume;
+
+        if (shouldPlay)
+        {
+            if (!wasWalkingPlaying)
+            {
+                footstepsSource.loop = true;
+                footstepsSource.Play();
+                wasWalkingPlaying = true;
+            }
+        }
+        else
+        {
+            if (wasWalkingPlaying)
+            {
+                footstepsSource.Stop();
+                wasWalkingPlaying = false;
+            }
+        }
+    }
+
     public void TakeDamage(float damage)
     {
         Debug.Log($"Player took {damage} damage!");
-        // Implement health reduction and death logic here
         currentHealth -= damage;
         if (currentHealth <= 0f)
         {
