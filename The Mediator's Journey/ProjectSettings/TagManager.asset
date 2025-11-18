@@ -4,6 +4,7 @@
 TagManager:
   serializedVersion: 2
   tags:
+  - NPC
   - PlayerWeapon
   layers:
   - Default
@@ -13,10 +14,6 @@ TagManager:
   - Water
   - UI
   - Ground
-  - Not See Through
-  - BG_Far
-  - BG_Near
-  - World/Decor
   - Enemy
   - Weapon
   - Level
