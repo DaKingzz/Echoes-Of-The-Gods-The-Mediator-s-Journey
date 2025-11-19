@@ -21,9 +21,13 @@ public class PauseMenu : MonoBehaviour
     void Update()
     {
         // Letter P toggles pause/unpause
-        if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
-        {
-            TogglePause();
+        if (Keyboard.current != null) 
+        { 
+            if (Keyboard.current.pKey.wasPressedThisFrame)
+                TogglePause();
+
+            if (Keyboard.current.hKey.wasPressedThisFrame && isPaused)
+                QuitToMenu();
         }
     }
 
@@ -47,7 +51,6 @@ public class PauseMenu : MonoBehaviour
 
     public void Resume()
     {
-        SoundManager.Instance.PlayClick();
         if (!isPaused) return;
         TogglePause();
     }
