@@ -21,8 +21,7 @@ public class MainMenu : MonoBehaviour
         VideoPlayer vp = settingsPanel.GetComponent<VideoPlayer>();
         if (vp)
         {
-            vp.Prepare();
-            vp.prepareCompleted += (player) => player.Play();
+            vp.Play(); 
         }
     }
 
