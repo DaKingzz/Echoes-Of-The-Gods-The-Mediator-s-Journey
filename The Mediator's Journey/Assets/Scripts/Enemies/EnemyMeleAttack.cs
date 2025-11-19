@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// EnemyMeleeAttackAnimDriven
+/// EnemyMeleeAttack
 /// - Trigger-driven melee component that decides attacks itself (no external calls).
 /// - Starts windup when a player enters the attackArea trigger; animation must call OnAttackHitFrame and OnAttackEndFrame.
 /// - Uses a cached animator hash (IsAttacking) and robust trigger handling that finds IPlayer on children/parents.
@@ -63,7 +63,8 @@ public class EnemyMeleeAttack : MonoBehaviour
     private const string playerTag = "Player";
 
     // runtime state
-    private readonly HashSet<IPlayer> playersInside = new HashSet<IPlayer>();
+    // track actual colliders overlapping the attackArea for robust enter/exit bookkeeping
+    private readonly HashSet<Collider2D> overlappingColliders = new HashSet<Collider2D>();
     private volatile bool isWindingUp = false;
     private float lastAttackTime = -Mathf.Infinity;
     private bool awaitingNextAttack = false;
@@ -182,98 +183,86 @@ public class EnemyMeleeAttack : MonoBehaviour
         }
     }
 
-    // Robust trigger enter that finds IPlayer on collider's parents/children and accepts tag on parent roots
+    // helper: returns true if this collider belongs to a player (has IPlayer in parents or parent tagged Player with IPlayer child)
+    private bool ColliderIsPlayer(Collider2D col)
+    {
+        if (col == null) return false;
+        if (col.GetComponentInParent<IPlayer>() != null) return true;
+
+        Transform t = col.transform;
+        while (t != null)
+        {
+            if (t.CompareTag(playerTag))
+            {
+                if (t.GetComponentInChildren<IPlayer>() != null) return true;
+            }
+
+            t = t.parent;
+        }
+
+        return false;
+    }
+
+    private bool AnyPlayerPresent()
+    {
+        lock (overlappingColliders)
+        {
+            foreach (var c in overlappingColliders)
+                if (ColliderIsPlayer(c))
+                    return true;
+        }
+
+        return false;
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other == null) return;
 
-        // Preferred: component implementing IPlayer somewhere in parents
-        var player = other.GetComponentInParent<IPlayer>();
-        if (player != null)
+        // only track player colliders
+        if (!ColliderIsPlayer(other))
         {
-            AddPlayerInside(player);
-            if (debugLogs)
-                Debug.Log($"[EnemyMeleeAttack] TriggerEnter found IPlayer on '{other.name}' -> added.", this);
+            if (debugLogs) Debug.Log($"[EnemyMeleeAttack] Ignored non-player collider '{other.name}' on Enter.", this);
             return;
         }
 
-        // Fallback: tag might be on a parent; search upwards for a tagged transform and then for an IPlayer under it
-        Transform t = other.transform;
-        while (t != null)
+        lock (overlappingColliders)
         {
-            if (t.CompareTag(playerTag))
-            {
-                var p = t.GetComponentInChildren<IPlayer>();
-                if (p != null)
-                {
-                    AddPlayerInside(p);
-                    if (debugLogs)
-                        Debug.Log($"[EnemyMeleeAttack] TriggerEnter found tag on parent '{t.name}' -> added player.",
-                            this);
-                    return;
-                }
-            }
-
-            t = t.parent;
+            overlappingColliders.Add(other);
         }
 
         if (debugLogs)
-            Debug.Log($"[EnemyMeleeAttack] TriggerEnter ignored '{other.name}' tag={other.tag} (no IPlayer found).",
+            Debug.Log(
+                $"[EnemyMeleeAttack] Player collider Enter '{other.name}' added. Count={overlappingColliders.Count}.",
                 this);
-    }
 
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other == null) return;
-
-        var player = other.GetComponentInParent<IPlayer>();
-        if (player != null)
-        {
-            RemovePlayerInside(player);
-            if (debugLogs) Debug.Log($"[EnemyMeleeAttack] TriggerExit removed IPlayer from '{other.name}'.", this);
-            return;
-        }
-
-        Transform t = other.transform;
-        while (t != null)
-        {
-            if (t.CompareTag(playerTag))
-            {
-                var p = t.GetComponentInChildren<IPlayer>();
-                if (p != null)
-                {
-                    RemovePlayerInside(p);
-                    if (debugLogs)
-                        Debug.Log($"[EnemyMeleeAttack] TriggerExit removed player by parent tag '{t.name}'.", this);
-                    return;
-                }
-            }
-
-            t = t.parent;
-        }
-    }
-
-    private void AddPlayerInside(IPlayer p)
-    {
-        if (p == null) return;
-        lock (playersInside)
-        {
-            playersInside.Add(p);
-        }
-
+        // Start windup if not already winding and cooldown passed
         if (!isWindingUp && Time.time - lastAttackTime >= attackCooldown)
         {
             StartCoroutine(WindupCoroutine());
         }
     }
 
-    private void RemovePlayerInside(IPlayer p)
+    private void OnTriggerExit2D(Collider2D other)
     {
-        if (p == null) return;
-        lock (playersInside)
+        if (other == null) return;
+
+        // ignore non-player colliders consistently
+        if (!ColliderIsPlayer(other))
         {
-            playersInside.Remove(p);
+            if (debugLogs) Debug.Log($"[EnemyMeleeAttack] Ignored non-player collider '{other.name}' on Exit.", this);
+            return;
         }
+
+        lock (overlappingColliders)
+        {
+            overlappingColliders.Remove(other);
+        }
+
+        if (debugLogs)
+            Debug.Log(
+                $"[EnemyMeleeAttack] Player collider Exit '{other.name}' removed. Count={overlappingColliders.Count}.",
+                this);
     }
 
     private IEnumerator WindupCoroutine()
@@ -285,14 +274,25 @@ public class EnemyMeleeAttack : MonoBehaviour
         {
             if (cancelIfEmptyDuringWindup)
             {
-                lock (playersInside)
+                bool anyPlayer;
+                lock (overlappingColliders)
                 {
-                    if (playersInside.Count == 0)
+                    anyPlayer = false;
+                    foreach (var col in overlappingColliders)
                     {
-                        isWindingUp = false;
-                        if (debugLogs) Debug.Log("[EnemyMeleeAttack] Windup cancelled because players left.", this);
-                        yield break;
+                        if (ColliderIsPlayer(col))
+                        {
+                            anyPlayer = true;
+                            break;
+                        }
                     }
+                }
+
+                if (!anyPlayer)
+                {
+                    isWindingUp = false;
+                    if (debugLogs) Debug.Log("[EnemyMeleeAttack] Windup cancelled because player(s) left.", this);
+                    yield break;
                 }
             }
 
@@ -311,19 +311,30 @@ public class EnemyMeleeAttack : MonoBehaviour
     {
         if (!isWindingUp) return;
 
-        IPlayer[] snapshot;
-        lock (playersInside)
+        // snapshot current colliders to avoid locking while calling player code
+        Collider2D[] snapshot;
+        lock (overlappingColliders)
         {
-            snapshot = new IPlayer[playersInside.Count];
-            playersInside.CopyTo(snapshot);
+            snapshot = new Collider2D[overlappingColliders.Count];
+            overlappingColliders.CopyTo(snapshot);
+        }
+
+        // map colliders -> IPlayer, avoid duplicates when player has multiple colliders
+        var hitPlayers = new HashSet<IPlayer>();
+        for (int i = 0; i < snapshot.Length; i++)
+        {
+            var col = snapshot[i];
+            if (col == null) continue;
+            var p = col.GetComponentInParent<IPlayer>();
+            if (p != null) hitPlayers.Add(p);
         }
 
         if (debugLogs)
-            Debug.Log($"[EnemyMeleeAttack] OnAttackHitFrame applying damage to {snapshot.Length} players.", this);
+            Debug.Log($"[EnemyMeleeAttack] OnAttackHitFrame applying damage to {hitPlayers.Count} players.", this);
 
-        for (int i = 0; i < snapshot.Length; i++)
+        foreach (var player in hitPlayers)
         {
-            snapshot[i]?.TakeDamage(damage);
+            player?.TakeDamage(damage);
         }
     }
 
@@ -338,13 +349,7 @@ public class EnemyMeleeAttack : MonoBehaviour
 
         if (repeatWhileInside)
         {
-            bool hasPlayers;
-            lock (playersInside)
-            {
-                hasPlayers = playersInside.Count > 0;
-            }
-
-            if (hasPlayers && !awaitingNextAttack)
+            if (AnyPlayerPresent() && !awaitingNextAttack)
             {
                 StartCoroutine(WaitAndRestartAttack());
             }
@@ -363,13 +368,7 @@ public class EnemyMeleeAttack : MonoBehaviour
 
         if (!isWindingUp)
         {
-            bool hasPlayers;
-            lock (playersInside)
-            {
-                hasPlayers = playersInside.Count > 0;
-            }
-
-            if (hasPlayers && Time.time - lastAttackTime >= attackCooldown)
+            if (AnyPlayerPresent() && Time.time - lastAttackTime >= attackCooldown)
             {
                 StartCoroutine(WindupCoroutine());
             }
