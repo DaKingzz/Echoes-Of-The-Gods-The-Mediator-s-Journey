@@ -12,7 +12,16 @@ public class PlayerController : MonoBehaviour, IPlayer
     [SerializeField]
     private float maximumHealth = 10f;
 
+    public float MaximumHealth => maximumHealth;
+
     private float currentHealth;
+
+    public float CurrentHealth
+    {
+        get => currentHealth;
+        private set => currentHealth = Mathf.Max(0f, value);
+    }
+
 
     public event Action<float> OnTookDamage;
     public event Action OnDied;
