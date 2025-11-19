@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Video;
 
 public class MainMenu : MonoBehaviour
 {
@@ -16,6 +17,13 @@ public class MainMenu : MonoBehaviour
     {
         if (mainMenuPanel) mainMenuPanel.SetActive(false);
         if (settingsPanel) settingsPanel.SetActive(true);
+
+        VideoPlayer vp = settingsPanel.GetComponent<VideoPlayer>();
+        if (vp)
+        {
+            vp.Prepare();
+            vp.prepareCompleted += (player) => player.Play();
+        }
     }
 
     public void OpenCredits()
