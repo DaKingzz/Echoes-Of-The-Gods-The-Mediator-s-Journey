@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - NPC
+  - PlayerWeapon
   layers:
   - Default
   - TransparentFX
@@ -13,13 +14,9 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Enemy
+  - Weapon
+  - Level
   - 
   - 
   - 
