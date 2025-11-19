@@ -6294,6 +6294,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Grass
       objectReference: {fileID: 0}
+    - target: {fileID: 416174732220924870, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 639380794440939485, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
       value: Grass
@@ -6622,6 +6626,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Grass
       objectReference: {fileID: 0}
+    - target: {fileID: 7243449656229608388, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 7243449656229608388, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -89
+      objectReference: {fileID: 0}
     - target: {fileID: 7256225143529352960, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -6725,6 +6737,14 @@ PrefabInstance:
     - target: {fileID: 8266468192859396757, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
       value: Plant (0)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 462
+      objectReference: {fileID: 0}
+    - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -272
       objectReference: {fileID: 0}
     - target: {fileID: 8549524176787423951, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
