@@ -15,9 +15,13 @@ GameObject:
   - component: {fileID: 4759906440543809129}
   - component: {fileID: 9173306734837326367}
   - component: {fileID: -933271739459964310}
-  - component: {fileID: 6554620828737605849}
+<<<<<<< HEAD
   - component: {fileID: 2721836828717740360}
+  - component: {fileID: 6554620828737605849}
+  m_Layer: 3
+=======
   m_Layer: 0
+>>>>>>> main
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -281,13 +285,16 @@ MonoBehaviour:
   sustainedJumpMaximumDuration: 2
   baseGravityScale: 3
   fallGravityMultiplier: 4
-  groundedVerticalVelocityThreshold: 0.05
-  groundedStabilityTime: 0.02
+<<<<<<< HEAD
   sfxSource: {fileID: 6554620828737605849}
   footstepsSource: {fileID: 2721836828717740360}
   jumpSoundVolume: 1
   walkSoundVolume: 1
   walkThreshold: 0.01
+=======
+  groundedVerticalVelocityThreshold: 0.05
+  groundedStabilityTime: 0.02
+>>>>>>> main
 --- !u!95 &-933271739459964310
 Animator:
   serializedVersion: 5
@@ -309,7 +316,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!82 &6554620828737605849
+--- !u!82 &2721836828717740360
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -319,7 +326,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: acb7fd7e1f130f345bc35b617bdb5d7f, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 20b235118e6bf614ead3e04d0c661a5a, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -405,7 +412,7 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!82 &2721836828717740360
+--- !u!82 &6554620828737605849
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -415,7 +422,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 20b235118e6bf614ead3e04d0c661a5a, type: 3}
+  m_audioClip: {fileID: 8300000, guid: acb7fd7e1f130f345bc35b617bdb5d7f, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -661,6 +668,7 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
+<<<<<<< HEAD
 --- !u!82 &523928903116751669
 AudioSource:
   m_ObjectHideFlags: 0
@@ -757,6 +765,8 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+=======
+>>>>>>> main
 --- !u!1 &4863411110276509613
 GameObject:
   m_ObjectHideFlags: 0
