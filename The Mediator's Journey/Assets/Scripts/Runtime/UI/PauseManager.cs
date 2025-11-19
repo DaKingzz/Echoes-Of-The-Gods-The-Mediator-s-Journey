@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -20,20 +21,32 @@ public class PauseMenu : MonoBehaviour
     void Update()
     {
         // Letter P toggles pause/unpause
-        if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
-        {
-            TogglePause();
+        if (Keyboard.current != null) 
+        { 
+            if (Keyboard.current.pKey.wasPressedThisFrame)
+                TogglePause();
+
+            if (Keyboard.current.hKey.wasPressedThisFrame && isPaused)
+                QuitToMenu();
         }
     }
 
     public void TogglePause()
     {
+        SoundManager.Instance.PlayClick();
+
         isPaused = !isPaused;
 
         if (pausePanel) pausePanel.SetActive(isPaused);
         if (pauseButton) pauseButton.SetActive(!isPaused);
 
         Time.timeScale = isPaused ? 0f : 1f;
+
+        // switch music when paused
+        if (isPaused)
+            SoundManager.Instance.PlayMenuMusic();
+        else
+            SoundManager.Instance.PlayGameMusic();
     }
 
     public void Resume()
@@ -44,7 +57,9 @@ public class PauseMenu : MonoBehaviour
 
     public void QuitToMenu()
     {
+        SoundManager.Instance.PlayClick();
         Time.timeScale = 1f;
-        GameManager.Instance.LoadMainMenu();
+        //GameManager.Instance.LoadMainMenu();
+        SceneManager.LoadScene("MainMenu");
     }
 }
