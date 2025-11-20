@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,9 +26,17 @@ public class NPC : MonoBehaviour
             if (!dialoguePanel.activeInHierarchy)
             {
                 dialoguePanel.SetActive(true);
-                playerMovement.enabled = false;
+                if(playerMovement != null)
+                {
+                    playerMovement.enabled = false;
 
-                Dialogue dialogue = dialoguePanel.GetComponent<Dialogue>();
+                }
+                else
+                {
+                    UnityEngine.Debug.LogError("PlayerController is not assigned or found.");
+                }
+
+                    Dialogue dialogue = dialoguePanel.GetComponent<Dialogue>();
                 if (dialogue != null)
                 {
                     dialogue.startDialogue();
