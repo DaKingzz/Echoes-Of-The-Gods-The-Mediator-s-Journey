@@ -6467,6 +6467,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Grass
       objectReference: {fileID: 0}
+    - target: {fileID: 2571659358743203809, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2571659358743203809, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2715493870390626038, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
       value: Moss
@@ -6491,6 +6499,14 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300036, guid: 6167b5d3cb29d52488e611c0cb2a074c, type: 3}
+    - target: {fileID: 3231508269152788408, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -140
+      objectReference: {fileID: 0}
+    - target: {fileID: 3231508269152788408, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 124
+      objectReference: {fileID: 0}
     - target: {fileID: 3334338302898072557, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_SizeDelta.x
       value: 220
@@ -6720,12 +6736,16 @@ PrefabInstance:
       value: Grass
       objectReference: {fileID: 0}
     - target: {fileID: 7243449656229608388, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 7243449656229608388, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7243449656229608388, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -89
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7256225143529352960, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_IsActive
@@ -6833,11 +6853,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 462
+      value: 822
       objectReference: {fileID: 0}
     - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -272
+      value: -420
       objectReference: {fileID: 0}
     - target: {fileID: 8549524176787423951, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
