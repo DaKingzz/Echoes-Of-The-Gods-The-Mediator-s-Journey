@@ -33,8 +33,8 @@ Transform:
   m_GameObject: {fileID: 223006276990223830}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.67, y: 7.07, z: 3}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 36.74, y: 8.27, z: -13}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1122362849664133006}
@@ -274,11 +274,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maximumHealth: 10
-  movementSpeed: 10
-  runSpeedMultiplier: 1.5
-  initialJumpVelocity: 10
-  sustainedJumpAcceleration: 50
-  sustainedJumpMaximumDuration: 2
+  movementSpeed: 5
+  runSpeedMultiplier: 2
+  initialJumpVelocity: 11
+  sustainedJumpAcceleration: 15
+  sustainedJumpMaximumDuration: 1
   baseGravityScale: 3
   fallGravityMultiplier: 4
   groundedVerticalVelocityThreshold: 0.05
@@ -319,7 +319,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: acb7fd7e1f130f345bc35b617bdb5d7f, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 17afc30cf307c924986c285aeb8e6662, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -415,7 +415,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 20b235118e6bf614ead3e04d0c661a5a, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 70f14c77baebb954ba43285cfa871f80, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -823,10 +823,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 90
   orthographic: 1
-  orthographic size: 25
+  orthographic size: 7
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
