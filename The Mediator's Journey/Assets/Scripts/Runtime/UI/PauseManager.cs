@@ -23,7 +23,7 @@ public class PauseMenu : MonoBehaviour
         // Letter P toggles pause/unpause
         if (Keyboard.current != null) 
         { 
-            if (Keyboard.current.pKey.wasPressedThisFrame)
+            if (Keyboard.current.pKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
                 TogglePause();
 
             if (Keyboard.current.hKey.wasPressedThisFrame && isPaused)
@@ -33,7 +33,8 @@ public class PauseMenu : MonoBehaviour
 
     public void TogglePause()
     {
-        SoundManager.Instance.PlayClick();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayClick();
 
         isPaused = !isPaused;
 
@@ -43,10 +44,13 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = isPaused ? 0f : 1f;
 
         // switch music when paused
-        if (isPaused)
-            SoundManager.Instance.PlayMenuMusic();
-        else
-            SoundManager.Instance.PlayGameMusic();
+        if (SoundManager.Instance != null)
+        {
+            if (isPaused)
+                SoundManager.Instance.PlayMenuMusic();
+            else
+                SoundManager.Instance.PlayGameMusic();
+        }
     }
 
     public void Resume()
@@ -57,7 +61,8 @@ public class PauseMenu : MonoBehaviour
 
     public void QuitToMenu()
     {
-        SoundManager.Instance.PlayClick();
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayClick();
         Time.timeScale = 1f;
         //GameManager.Instance.LoadMainMenu();
         SceneManager.LoadScene("MainMenu");

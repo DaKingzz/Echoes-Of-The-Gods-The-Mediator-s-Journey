@@ -3179,6 +3179,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 5744640783457440205, guid: 515b9364ced639b468c37302b390b4d4, type: 3}
   m_PrefabInstance: {fileID: 19572449}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1044239671 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5355675361449873684, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+  m_PrefabInstance: {fileID: 6689297621339106421}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13ad56ee660d19641a3cef4aab5a594f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1085501721
 GameObject:
   m_ObjectHideFlags: 0
@@ -6501,11 +6512,11 @@ PrefabInstance:
       objectReference: {fileID: 21300036, guid: 6167b5d3cb29d52488e611c0cb2a074c, type: 3}
     - target: {fileID: 3231508269152788408, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -140
+      value: -948
       objectReference: {fileID: 0}
     - target: {fileID: 3231508269152788408, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 124
+      value: 254
       objectReference: {fileID: 0}
     - target: {fileID: 3334338302898072557, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_SizeDelta.x
@@ -6853,15 +6864,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 822
+      value: 857
       objectReference: {fileID: 0}
     - target: {fileID: 8345245702284947402, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -420
+      value: 453
       objectReference: {fileID: 0}
     - target: {fileID: 8549524176787423951, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
       value: Plant (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1044239671}
+    - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: TogglePause
+      objectReference: {fileID: 0}
+    - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PauseMenu, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 8576016055588915561, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Name
