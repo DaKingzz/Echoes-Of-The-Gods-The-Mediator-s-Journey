@@ -1,39 +1,158 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(Animator))]
 public class PlayerController : MonoBehaviour, IPlayer
 {
-    [Header("Health Settings")] [SerializeField]
-    private float maxHealth = 10f;
+    #region Health
+
+    [Header("Health Settings")]
+    [Tooltip("Maximum player health. CurrentHealth will be clamped between 0 and this value.")]
+    [SerializeField]
+    private float maximumHealth = 10f;
+
+    public float MaximumHealth => maximumHealth;
 
     private float currentHealth;
 
-    [Header("Movement Settings")] [SerializeField]
+    public float CurrentHealth
+    {
+        get => currentHealth;
+        private set => currentHealth = Mathf.Max(0f, value);
+    }
+
+
+    public event Action<float> OnTookDamage;
+    public event Action OnDied;
+
+    #endregion
+
+    #region Movement Configuration
+
+    [Header("Movement Settings")] [Tooltip("Horizontal movement speed in world units per second.")] [SerializeField]
     private float movementSpeed = 8f;
 
-    [SerializeField] private float runMultiplier = 1.5f;
+    [Tooltip("Multiplier applied to movementSpeed while the run input is held.")] [SerializeField]
+    private float runSpeedMultiplier = 1.5f;
 
-    [Header("Jump Settings")] [SerializeField]
-    private float initialJumpForce = 8f; // burst at jump start
+    #endregion
 
-    [SerializeField] private float sustainedJumpForce = 5f; // extra force while holding
-    [SerializeField] private float sustainedJumpDuration = 0.25f; // how long extra force can be applied
-    [SerializeField] private float gravityScale = 3f;
-    [SerializeField] private float fallGravityMultiplier = 2f;
+    #region Jump Configuration (variable jump: small and big jumps)
+
+    [Header("Jump Settings")]
+    [Tooltip(
+        "Initial vertical velocity applied at the instant of jump (world units/second). This is the jump 'burst'.")]
+    [SerializeField]
+    private float initialJumpVelocity = 10f;
+
+    [Tooltip("Total additional upward force applied while the jump input is held (world units/second^2).")]
+    [SerializeField]
+    private float sustainedJumpAcceleration = 50f;
+
+    [Tooltip("Maximum duration in seconds during which sustained jump acceleration may be applied after jump start.")]
+    [SerializeField]
+    private float sustainedJumpMaximumDuration = 2f;
+
+    #endregion
+
+    #region Gravity Configuration
+
+    [Header("Gravity Settings")] [Tooltip("Base gravity scale to apply to the Rigidbody2D at start.")] [SerializeField]
+    private float baseGravityScale = 3f;
+
+    [Tooltip("Multiplier applied to gravity when the player is falling (makes fall faster).")] [SerializeField]
+    private float fallGravityMultiplier = 2f;
+
+    #endregion
+
+    #region Grounded-from-Velocity Configuration
+
+    [Header("Grounded From Velocity")]
+    [Tooltip(
+        "If the absolute vertical velocity is less than or equal to this threshold, the player is considered grounded.")]
+    [SerializeField]
+    private float groundedVerticalVelocityThreshold = 0.05f;
+
+    [Tooltip(
+        "Minimum time in seconds the vertical velocity must remain below the threshold to be treated as grounded. Helps avoid flicker on very fast physics steps.")]
+    [SerializeField]
+    private float groundedStabilityTime = 0.02f;
+
+    #endregion
+
+    #region Audio (assign AudioSource components in the editor)
+
+    [Header("Audio Sources")]
+    [Tooltip("AudioSource used for one-shot SFX like jump. Prefer non-looping AudioSource.")]
+    [SerializeField]
+    private AudioSource sfxSource;
+
+    [Tooltip(
+        "AudioSource used for looped walking/footstep sound. Prefer looping AudioSource or leave empty to let script manage it.")]
+    [SerializeField]
+    private AudioSource footstepsSource;
+
+    [Header("Audio Volumes (optional overrides)")] [Range(0f, 1f)] [SerializeField]
+    private float jumpSoundVolume = 1f;
+
+    [Range(0f, 1f)] [SerializeField] private float walkSoundVolume = 1f;
+
+    [Header("Walking Sound Settings")]
+    [Tooltip("Minimum horizontal input magnitude to consider the player 'walking'.")]
+    [SerializeField]
+    private float walkThreshold = 0.01f;
+
+    #endregion
+
+    #region Components and Animator Hashes
 
     private Rigidbody2D rigidBody2D;
     private Collider2D collider2D;
     private Animator animator;
 
-    private Vector2 movementInput;
-    private bool jumpPressed;
-    private bool jumpHeld;
-    private bool runHeld;
-    private bool isGrounded;
-    private bool isFacingRight = true;
+    private readonly int animatorHashIsWalking = Animator.StringToHash("isWalking");
+    private readonly int animatorHashIsJumpingForward = Animator.StringToHash("isJumpingForward");
+    private readonly int animatorHashIsJumpingRight = Animator.StringToHash("isJumpingRight");
 
-    private float jumpStartTime;
+    #endregion
+
+    #region Input State
+
+    // Movement input vector captured by Input System
+    private Vector2 movementInput = Vector2.zero;
+
+    // Run state captured by Input System (held or not)
+    private bool runInputHeld;
+
+    // Jump state captured by Input System:
+    // - jumpInputHeld: true while button is held
+    // - jumpPressedThisFrame: becomes true when performed and is consumed in FixedUpdate
+    private bool jumpInputHeld;
+    private bool jumpPressedThisFrame;
+
+    #endregion
+
+    #region Runtime State
+
+    private bool isFacingRight = true;
+    private bool isGrounded;
+    private float timeWhenVerticalBelowThreshold = -Mathf.Infinity;
+    private float timeWhenJumpStarted = -Mathf.Infinity;
+
+    // walking audio state
+    private bool wasWalkingPlaying = false;
+
+    #endregion
+
+    #region Unity Lifecycle
+
+    private void Reset()
+    {
+        // ensure at least one AudioSource exists so designers can wire two if desired
+        if (GetComponents<AudioSource>().Length == 0)
+            gameObject.AddComponent<AudioSource>();
+    }
 
     private void Start()
     {
@@ -41,137 +160,333 @@ public class PlayerController : MonoBehaviour, IPlayer
         collider2D = GetComponent<Collider2D>();
         animator = GetComponent<Animator>();
 
-        rigidBody2D.gravityScale = gravityScale;
-        currentHealth = maxHealth;
+        // Auto-resolve audio sources if the designer didn't assign them
+        AudioSource[] sources = GetComponents<AudioSource>();
+        if (sfxSource == null)
+        {
+            if (sources.Length >= 1) sfxSource = sources[0];
+            else sfxSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        if (footstepsSource == null)
+        {
+            if (sources.Length >= 2) footstepsSource = sources[1];
+            else if (sources.Length == 1) footstepsSource = gameObject.AddComponent<AudioSource>();
+            else footstepsSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // sensible defaults (do not override designer choices unnecessarily)
+        if (sfxSource != null)
+        {
+            sfxSource.playOnAwake = false;
+            sfxSource.loop = false;
+        }
+
+        if (footstepsSource != null)
+        {
+            footstepsSource.playOnAwake = false;
+            // Keep footstepsSource.loop as configured by designer; script will ensure loop when playing
+        }
+
+        rigidBody2D.gravityScale = baseGravityScale;
+        currentHealth = Mathf.Clamp(maximumHealth, 0f, maximumHealth);
     }
 
     private void Update()
     {
-        animator.SetBool("isWalking", Mathf.Abs(movementInput.x) > 0.01f && isGrounded);
-
-        if (!isGrounded)
-        {
-            if (rigidBody2D.velocity.y > 0f)
-            {
-                if (Mathf.Abs(movementInput.x) > 0.01f)
-                {
-                    animator.SetBool("isJumpingRight", true);
-                    animator.SetBool("isJumpingForward", false);
-                }
-                else
-                {
-                    animator.SetBool("isJumpingForward", true);
-                    animator.SetBool("isJumpingRight", false);
-                }
-            }
-            else
-            {
-                animator.SetBool("isJumpingForward", false);
-                animator.SetBool("isJumpingRight", false);
-            }
-        }
-        else
-        {
-            animator.SetBool("isJumpingForward", false);
-            animator.SetBool("isJumpingRight", false);
-        }
+        // Non-physics visual updates (animator)
+        UpdateAnimatorVisuals();
     }
 
     private void FixedUpdate()
     {
-        // Ground check: any contact beneath counts
-        isGrounded = false;
-        ContactPoint2D[] contacts = new ContactPoint2D[4];
-        int contactCount = rigidBody2D.GetContacts(contacts);
-        for (int i = 0; i < contactCount; i++)
+        // Determine grounded state using vertical velocity
+        RefreshGroundedStateFromVelocity();
+
+        // Compute desired velocity locally and assign once at the end
+        Vector2 computedVelocity = rigidBody2D.velocity;
+
+        // Horizontal movement (apply run multiplier if held)
+        float horizontalSpeed = movementInput.x * (runInputHeld ? movementSpeed * runSpeedMultiplier : movementSpeed);
+        computedVelocity.x = horizontalSpeed;
+
+        // Jump start: consume the pressed flag and only allow jumps when considered grounded
+        if (jumpPressedThisFrame && isGrounded)
         {
-            if (contacts[i].normal.y > 0.5f)
+            computedVelocity.y = initialJumpVelocity;
+            timeWhenJumpStarted = Time.fixedTime;
+
+            // play jump SFX using sfxSource: prefer PlayOneShot if clip assigned, otherwise Play()
+            if (sfxSource != null)
             {
-                isGrounded = true;
-                break;
+                if (sfxSource.clip != null)
+                    sfxSource.PlayOneShot(sfxSource.clip, jumpSoundVolume);
+                else
+                    sfxSource.Play();
             }
+
+            // consume the press
+            jumpPressedThisFrame = false;
         }
-
-        // Horizontal movement with sprint multiplier
-        float currentSpeed = movementSpeed * (runHeld ? runMultiplier : 1f);
-        rigidBody2D.velocity = new Vector2(movementInput.x * currentSpeed, rigidBody2D.velocity.y);
-
-        // Flip sprite if needed
-        if (movementInput.x > 0 && !isFacingRight) Flip();
-        else if (movementInput.x < 0 && isFacingRight) Flip();
-
-        // Jump start
-        if (jumpPressed && isGrounded)
+        else
         {
-            rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, initialJumpForce);
-            jumpStartTime = Time.time;
+            // ensure we don't keep stale pressed flag
+            jumpPressedThisFrame = false;
         }
 
-        // Sustained jump while holding
-        if (jumpHeld && !isGrounded)
-        {
-            float elapsed = Time.time - jumpStartTime;
-            if (elapsed < sustainedJumpDuration)
-            {
-                // Apply diminishing upward force
-                float holdFactor = 1f - (elapsed / sustainedJumpDuration); // decreases from 1 to 0
-                rigidBody2D.velocity += Vector2.up * (sustainedJumpForce * holdFactor * Time.fixedDeltaTime);
-            }
-        }
+        // Sustained jump while holding: variable jump height mechanic
+        ApplySustainedJump(ref computedVelocity);
 
-        // Extra gravity when falling
-        if (rigidBody2D.velocity.y < 0f)
-        {
-            rigidBody2D.velocity +=
-                Vector2.up * (Physics2D.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime);
-        }
+        // Extra gravity while falling to make descents snappier
+        ApplyExtraFallGravity(ref computedVelocity);
 
-        jumpPressed = false;
+        // Commit velocity exactly once
+        rigidBody2D.velocity = computedVelocity;
+
+        // Update walking sound (based on grounded and horizontal input)
+        bool isWalkingNow = Mathf.Abs(movementInput.x) > walkThreshold && isGrounded;
+        UpdateWalkingSound(isWalkingNow);
     }
 
-    // -------- Input System Callbacks --------
+    #endregion
+
+    #region Grounded-from-Velocity Logic
+
+    /// <summary>
+    /// Uses the Rigidbody2D vertical velocity to determine if the player is grounded.
+    /// The player is treated as grounded when the absolute vertical velocity stays below a small threshold
+    /// for groundedStabilityTime seconds to avoid flicker from physics steps.
+    /// </summary>
+    private void RefreshGroundedStateFromVelocity()
+    {
+        float absoluteVerticalSpeed = Mathf.Abs(rigidBody2D.velocity.y);
+
+        if (absoluteVerticalSpeed <= groundedVerticalVelocityThreshold)
+        {
+            // record when vertical velocity dropped below threshold
+            if (timeWhenVerticalBelowThreshold == -Mathf.Infinity)
+                timeWhenVerticalBelowThreshold = Time.fixedTime;
+
+            // require stability time to consider grounded to prevent flicker
+            if (Time.fixedTime - timeWhenVerticalBelowThreshold >= groundedStabilityTime)
+                isGrounded = true;
+            else
+                isGrounded = false;
+        }
+        else
+        {
+            // reset timer when vertical speed goes above threshold
+            timeWhenVerticalBelowThreshold = -Mathf.Infinity;
+            isGrounded = false;
+        }
+    }
+
+    #endregion
+
+    #region Jump Helpers (variable jump implementation)
+
+    /// <summary>
+    /// Applies sustained upward acceleration for a limited duration while the jump input is held.
+    /// </summary>
+    private void ApplySustainedJump(ref Vector2 velocity)
+    {
+        // Must be holding jump and be airborne for sustained effect
+        if (!jumpInputHeld) return;
+        if (isGrounded) return;
+
+        float timeSinceJumpStart = Time.fixedTime - timeWhenJumpStarted;
+        if (timeSinceJumpStart <= sustainedJumpMaximumDuration)
+        {
+            float holdFactor = 1f - (timeSinceJumpStart / sustainedJumpMaximumDuration);
+            float accelerationThisFrame = sustainedJumpAcceleration * holdFactor;
+
+            // Apply acceleration as a velocity delta this frame
+            velocity.y += accelerationThisFrame * Time.fixedDeltaTime;
+
+            // Prevent runaway upward velocity from stacking too much
+            float maximumAllowedUpwardVelocity =
+                initialJumpVelocity + sustainedJumpAcceleration * sustainedJumpMaximumDuration * 0.9f;
+            if (velocity.y > maximumAllowedUpwardVelocity)
+                velocity.y = maximumAllowedUpwardVelocity;
+        }
+    }
+
+    #endregion
+
+    #region Gravity Helpers
+
+    /// <summary>
+    /// Applies extra gravity while falling to make descent snappier.
+    /// </summary>
+    private void ApplyExtraFallGravity(ref Vector2 velocity)
+    {
+        if (velocity.y < 0f)
+        {
+            float extraGravityThisFrame = Physics2D.gravity.y * (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
+            velocity.y += extraGravityThisFrame;
+        }
+    }
+
+    #endregion
+
+    #region Animator Management
+
+    /// <summary>
+    /// Updates animator parameters used purely for visuals.
+    /// </summary>
+    private void UpdateAnimatorVisuals()
+    {
+        if (animator == null) return;
+
+        animator.SetBool(animatorHashIsWalking, Mathf.Abs(movementInput.x) > 0.01f && isGrounded);
+
+        if (!isGrounded)
+        {
+            bool movingHorizontally = Mathf.Abs(movementInput.x) > 0.01f;
+            animator.SetBool(animatorHashIsJumpingRight, movingHorizontally);
+            animator.SetBool(animatorHashIsJumpingForward, !movingHorizontally);
+        }
+        else
+        {
+            animator.SetBool(animatorHashIsJumpingRight, false);
+            animator.SetBool(animatorHashIsJumpingForward, false);
+        }
+    }
+
+    #endregion
+
+    #region Input Callbacks
+
+    /// <summary>
+    /// Movement Input System callback. Captures movement vector and flips facing when direction changes.
+    /// </summary>
     public void OnMove(InputAction.CallbackContext context)
     {
         movementInput = context.ReadValue<Vector2>();
+
+        // Flip visual facing when horizontal direction changes
+        if (movementInput.x > 0f && !isFacingRight)
+            FlipFacingDirection();
+        else if (movementInput.x < 0f && isFacingRight)
+            FlipFacingDirection();
     }
 
+    /// <summary>
+    /// Jump Input System callback.
+    /// - performed: registers a press (consumed in FixedUpdate) and marks held
+    /// - canceled: marks release so sustained jump stops immediately
+    /// </summary>
     public void OnJump(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
-            jumpPressed = true;
-            jumpHeld = true;
+            // record press for consumption at the next FixedUpdate (physics step)
+            jumpPressedThisFrame = true;
+            jumpInputHeld = true;
         }
         else if (context.canceled)
         {
-            jumpHeld = false;
+            jumpInputHeld = false;
         }
     }
 
+    /// <summary>
+    /// Run Input System callback. Performed sets held to true; canceled sets held to false.
+    /// </summary>
     public void OnRun(InputAction.CallbackContext context)
     {
-        if (context.performed) runHeld = true;
-        else if (context.canceled) runHeld = false;
+        if (context.performed) runInputHeld = true;
+        else if (context.canceled) runInputHeld = false;
     }
 
-    // -------- Flip method --------
-    private void Flip()
+    #endregion
+
+    #region Facing / Visual Flip
+
+    /// <summary>
+    /// Flip the player's visual facing direction by negating the localScale.x.
+    /// If negative scales cause issues with child transforms or physics, consider switching to SpriteRenderer.flipX.
+    /// </summary>
+    private void FlipFacingDirection()
     {
         isFacingRight = !isFacingRight;
-        Vector3 localScale = transform.localScale;
-        localScale.x *= -1f;
-        transform.localScale = localScale;
+        Vector3 scale = transform.localScale;
+        scale.x *= -1f;
+        transform.localScale = scale;
     }
 
-    public void TakeDamage(float damage)
+    #endregion
+
+    #region Walking Sound Helper
+
+    private void UpdateWalkingSound(bool shouldPlay)
     {
-        Debug.Log($"Player took {damage} damage!");
-        // Implement health reduction and death logic here
-        currentHealth -= damage;
-        if (currentHealth <= 0f)
+        if (footstepsSource == null) return;
+
+        // keep volume in sync with inspector override
+        footstepsSource.volume = walkSoundVolume;
+
+        if (shouldPlay)
         {
-            Debug.Log("Player has died!");
-            Destroy(gameObject);
+            if (!wasWalkingPlaying)
+            {
+                footstepsSource.loop = true;
+                footstepsSource.Play();
+                wasWalkingPlaying = true;
+            }
+        }
+        else
+        {
+            if (wasWalkingPlaying)
+            {
+                footstepsSource.Stop();
+                wasWalkingPlaying = false;
+            }
         }
     }
+
+    #endregion
+
+    #region Health and Damage
+
+    /// <summary>
+    /// Applies damage to the player. Clamps health and triggers death when health reaches zero.
+    /// </summary>
+    public void TakeDamage(float damage)
+    {
+        if (damage <= 0f) return;
+
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0f, maximumHealth);
+
+        OnTookDamage?.Invoke(damage);
+
+        if (currentHealth <= 0f)
+            HandleDeath();
+    }
+
+    /// <summary>
+    /// Handles death: fires death event then destroys the GameObject.
+    /// </summary>
+    private void HandleDeath()
+    {
+        OnDied?.Invoke();
+        Destroy(gameObject);
+    }
+
+    #endregion
+
+    #region Editor Debugging
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        // Draw a small line indicating the grounded vertical velocity threshold (visual aid)
+        Gizmos.color = Color.yellow;
+        Vector3 origin = transform.position;
+        Gizmos.DrawLine(origin + Vector3.left * 0.5f, origin + Vector3.right * 0.5f);
+    }
+#endif
+
+    #endregion
 }

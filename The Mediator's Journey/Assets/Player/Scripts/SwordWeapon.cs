@@ -12,10 +12,13 @@ public class SwordWeapon : MonoBehaviour
 
     private Animator animator;
     private readonly HashSet<Collider2D> hitThisAttack = new HashSet<Collider2D>();
+    
+    private AudioSource audioSource;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void Attack(InputAction.CallbackContext context)
@@ -25,6 +28,7 @@ public class SwordWeapon : MonoBehaviour
             IsAttacking = true;
             hitThisAttack.Clear(); // reset hit list
             animator.SetTrigger("swordAttack");
+            audioSource.Play();
         }
     }
 
@@ -33,7 +37,7 @@ public class SwordWeapon : MonoBehaviour
         if (!IsAttacking) return;
 
         // Check if collider is on the enemy layer
-        if (((1 << other.gameObject.layer) & enemyMask) == 0) return;
+        if (((1 << other.gameObject.layer) & enemyMask) == 0)return;
 
         // Only hit once per attack
         if (hitThisAttack.Contains(other)) return;
