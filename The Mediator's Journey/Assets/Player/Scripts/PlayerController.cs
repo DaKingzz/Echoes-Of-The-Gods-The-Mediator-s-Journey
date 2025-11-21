@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,7 +23,6 @@ public class PlayerController : MonoBehaviour, IPlayer
         private set => currentHealth = Mathf.Max(0f, value);
     }
 
-
     public event Action<float> OnTookDamage;
     public event Action OnDied;
 
@@ -30,10 +30,13 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #region Movement Configuration
 
-    [Header("Movement Settings")] [Tooltip("Horizontal movement speed in world units per second.")] [SerializeField]
+    [Header("Movement Settings")]
+    [Tooltip("Horizontal movement speed in world units per second.")]
+    [SerializeField]
     private float movementSpeed = 8f;
 
-    [Tooltip("Multiplier applied to movementSpeed while the run input is held.")] [SerializeField]
+    [Tooltip("Multiplier applied to movementSpeed while the run input is held.")]
+    [SerializeField]
     private float runSpeedMultiplier = 1.5f;
 
     #endregion
@@ -58,10 +61,13 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #region Gravity Configuration
 
-    [Header("Gravity Settings")] [Tooltip("Base gravity scale to apply to the Rigidbody2D at start.")] [SerializeField]
+    [Header("Gravity Settings")]
+    [Tooltip("Base gravity scale to apply to the Rigidbody2D at start.")]
+    [SerializeField]
     private float baseGravityScale = 3f;
 
-    [Tooltip("Multiplier applied to gravity when the player is falling (makes fall faster).")] [SerializeField]
+    [Tooltip("Multiplier applied to gravity when the player is falling (makes fall faster).")]
+    [SerializeField]
     private float fallGravityMultiplier = 2f;
 
     #endregion
@@ -93,7 +99,8 @@ public class PlayerController : MonoBehaviour, IPlayer
     [SerializeField]
     private AudioSource footstepsSource;
 
-    [Header("Audio Volumes (optional overrides)")] [Range(0f, 1f)] [SerializeField]
+    [Header("Audio Volumes (optional overrides)")]
+    [Range(0f, 1f)] [SerializeField]
     private float jumpSoundVolume = 1f;
 
     [Range(0f, 1f)] [SerializeField] private float walkSoundVolume = 1f;
@@ -102,6 +109,33 @@ public class PlayerController : MonoBehaviour, IPlayer
     [Tooltip("Minimum horizontal input magnitude to consider the player 'walking'.")]
     [SerializeField]
     private float walkThreshold = 0.01f;
+
+    #endregion
+
+    #region Attack Configuration (immediate sweep on attack)
+
+    [Header("Attack Settings")]
+    [Tooltip("Child BoxCollider2D used only for defining sweep size/position. Is Trigger flag is ignored here.")]
+    [SerializeField]
+    private Collider2D damageArea; // optional: used to compute overlap box size/center; can be left null
+
+    [Tooltip("Damage applied to enemies hit by the attack.")]
+    [SerializeField]
+    private float attackDamage = 2f;
+
+    [Tooltip("LayerMask used to filter enemies for hit detection.")]
+    [SerializeField]
+    private LayerMask enemyLayerMask = default;
+
+    [Tooltip("If true, only first target per sweep is damaged.")]
+    [SerializeField]
+    private bool stopAfterFirstHit = false;
+
+    // temporary per-sweep set (prevents duplicate hits in same sweep)
+    private readonly HashSet<Collider2D> hitsThisSweep = new HashSet<Collider2D>();
+
+    // animator trigger hash for attack
+    private readonly int animatorHashAttack = Animator.StringToHash("isAttacking");
 
     #endregion
 
@@ -399,6 +433,18 @@ public class PlayerController : MonoBehaviour, IPlayer
         else if (context.canceled) runInputHeld = false;
     }
 
+    /// <summary>
+    /// Attack Input callback. Performs the animator trigger and immediately performs a sweep to damage enemies.
+    /// </summary>
+    public void OnAttack(InputAction.CallbackContext context)
+    {
+        if (context.performed && animator != null)
+        {
+            animator.SetTrigger(animatorHashAttack);
+            DoAttackSweep();
+        }
+    }
+
     #endregion
 
     #region Facing / Visual Flip
@@ -447,6 +493,52 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
+    #region Attack Sweep (immediate damage on input)
+
+    /// <summary>
+    /// Performs an instantaneous physics overlap (box) using the damageArea's transform/size if available,
+    /// otherwise uses a small default box in front of the player. Applies damage immediately to IDamageable targets found.
+    /// </summary>
+    private void DoAttackSweep()
+    {
+        hitsThisSweep.Clear();
+
+        // Determine centre, size and angle for the overlap box
+        Vector2 centre;
+        Vector2 size;
+        float angle = 0f;
+
+        if (damageArea is BoxCollider2D box)
+        {
+            size = Vector2.Scale(box.size, box.transform.lossyScale);
+            centre = (Vector2)box.transform.position + box.offset;
+            angle = box.transform.eulerAngles.z;
+        }
+        else
+        {
+            Debug.LogError("PlayerController.DoAttackSweep: damageArea is not assigned or not a BoxCollider2D. Using default small box in front of player.");
+            return;
+        }
+
+        Collider2D[] hits = Physics2D.OverlapBoxAll(centre, size, angle, enemyLayerMask);
+        foreach (var hit in hits)
+        {
+            if (hit == null) continue;
+            if (hitsThisSweep.Contains(hit)) continue;
+            hitsThisSweep.Add(hit);
+
+            var damageable = hit.GetComponent<IEnemy>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(attackDamage);
+            }
+
+            if (stopAfterFirstHit) break;
+        }
+    }
+
+    #endregion
+
     #region Health and Damage
 
     /// <summary>
@@ -485,6 +577,15 @@ public class PlayerController : MonoBehaviour, IPlayer
         Gizmos.color = Color.yellow;
         Vector3 origin = transform.position;
         Gizmos.DrawLine(origin + Vector3.left * 0.5f, origin + Vector3.right * 0.5f);
+
+        // Draw damageArea bounds if assigned and visible in editor
+        if (damageArea is BoxCollider2D box)
+        {
+            Gizmos.color = Color.red;
+            Vector2 size = Vector2.Scale(box.size, box.transform.lossyScale);
+            Vector3 pos = box.transform.position + (Vector3)box.offset;
+            Gizmos.DrawWireCube(pos, new Vector3(size.x, size.y, 0f));
+        }
     }
 #endif
 

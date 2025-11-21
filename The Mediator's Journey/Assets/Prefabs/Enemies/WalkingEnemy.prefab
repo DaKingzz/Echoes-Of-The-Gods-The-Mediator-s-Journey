@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 9146668286816882594}
   - component: {fileID: 6657484908982459704}
   - component: {fileID: 6473052183209729366}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PatrolEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -211,7 +211,7 @@ MonoBehaviour:
   allowAscendWhenBlocked: 1
   ascendSpeedBias: 0.6
   maximumHealth: 15
-  defaultSpriteFacing: 0
+  defaultSpriteFacing: 1
   rememberLastFacingWhileIdle: 1
   idleFacingSpeedThreshold: 0.05
   showDebugGizmos: 1
@@ -237,8 +237,8 @@ MonoBehaviour:
   attackArea: {fileID: 5623856451815288214}
   animator: {fileID: 5593851190209960007}
   cancelIfEmptyDuringWindup: 0
-  repeatWhileInside: 1
-  spriteRendererForFacing: {fileID: 0}
+  repeatWhileInside: 0
+  spriteRendererForFacing: {fileID: 8286692073693923460}
   artFacesRightByDefault: 1
   debugLogs: 0
 --- !u!1 &4304730285000851994
@@ -250,7 +250,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4283426168434050402}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: WalkingEnemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -285,7 +285,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6872422971947282933}
   - component: {fileID: 5623856451815288214}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: AttackArea
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -361,7 +361,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6930607670287102058}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PointA
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -392,7 +392,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3939274484192943359}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: PointB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
