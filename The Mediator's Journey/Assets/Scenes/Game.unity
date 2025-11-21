@@ -315,10 +315,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6208870465069709617, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Size.y
+      value: 2.0186963
+      objectReference: {fileID: 0}
+    - target: {fileID: 6208870465069709617, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Offset.y
+      value: -0.053151906
+      objectReference: {fileID: 0}
+    - target: {fileID: 6474287078926504289, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Size.y
+      value: 2.0068846
+      objectReference: {fileID: 0}
+    - target: {fileID: 6474287078926504289, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Offset.y
+      value: -0.059057713
+      objectReference: {fileID: 0}
     - target: {fileID: 7143874457500164157, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Follow
       value: 
       objectReference: {fileID: 1538314260}
+    - target: {fileID: 8125394315480127915, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Size.y
+      value: 2.022688
+      objectReference: {fileID: 0}
+    - target: {fileID: 8125394315480127915, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_Offset.y
+      value: -0.051155984
+      objectReference: {fileID: 0}
     - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
