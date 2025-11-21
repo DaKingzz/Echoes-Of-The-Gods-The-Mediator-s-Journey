@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
-    #region Audio (assign AudioSource components in the editor)
+    #region Audio
 
     [Header("Audio Sources")]
     [Tooltip("AudioSource used for one-shot SFX like jump. Prefer non-looping AudioSource.")]
@@ -97,6 +97,9 @@ public class PlayerController : MonoBehaviour, IPlayer
         "AudioSource used for looped walking/footstep sound. Prefer looping AudioSource or leave empty to let script manage it.")]
     [SerializeField]
     private AudioSource footstepsSource;
+
+    [Tooltip("Audio source for sword attack sounds")] [SerializeField]
+    private AudioSource SwordAttackAudioSource;
 
     [Header("Audio Volumes (optional overrides)")] [Range(0f, 1f)] [SerializeField]
     private float jumpSoundVolume = 1f;
@@ -126,11 +129,17 @@ public class PlayerController : MonoBehaviour, IPlayer
     [Tooltip("If true, only first target per sweep is damaged.")] [SerializeField]
     private bool stopAfterFirstHit = false;
 
+    [Header("Attack Cooldown")] [Tooltip("Minimum time in seconds between player attacks.")] [SerializeField]
+    private float attackCooldown = 0.35f;
+
     // temporary per-sweep set (prevents duplicate hits in same sweep)
     private readonly HashSet<Collider2D> hitsThisSweep = new HashSet<Collider2D>();
 
     // animator trigger hash for attack
     private readonly int animatorHashAttack = Animator.StringToHash("isAttacking");
+
+    // last attack timestamp
+    private float lastAttackTime = -Mathf.Infinity;
 
     #endregion
 
@@ -436,14 +445,26 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     /// <summary>
     /// Attack Input callback. Performs the animator trigger and immediately performs a sweep to damage enemies.
+    /// Enforces an editable cooldown between attacks.
     /// </summary>
     public void OnAttack(InputAction.CallbackContext context)
     {
-        if (context.performed && animator != null)
-        {
-            animator.SetTrigger(animatorHashAttack);
-            DoAttackSweep();
-        }
+        if (!context.performed || animator == null) return;
+
+        // enforce cooldown
+        if (Time.time - lastAttackTime < attackCooldown) return;
+
+        // record attack time
+        lastAttackTime = Time.time;
+
+        // trigger animator and perform sweep / sound
+        animator.SetTrigger(animatorHashAttack);
+
+        // play sword audio if assigned
+        if (SwordAttackAudioSource != null)
+            SwordAttackAudioSource.Play();
+
+        DoAttackSweep();
     }
 
     #endregion
