@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using System.IO.Pipes;
 
 
 public class Dialogue : MonoBehaviour
@@ -12,6 +13,7 @@ public class Dialogue : MonoBehaviour
     public float textSpeed;
     private PlayerController playerMovement;
     private SwordWeapon swordWeapon;
+    public NPC npc;
 
     private int index;
 
@@ -65,10 +67,19 @@ public class Dialogue : MonoBehaviour
             index++;
             StopAllCoroutines();
             StartCoroutine(TypeLine());
+
+            if (npc != null && index % 2 == 0)
+            {
+                npc.PlayDialogueAudio();
+            }
         }
         else
         {
             gameObject.SetActive(false);
+            if (npc != null)
+            {
+                npc.StopDialogueAudio();
+            }  
             if (playerMovement != null)
             {
                 playerMovement.enabled = true;

@@ -13,15 +13,17 @@ public class NPC : MonoBehaviour
     private PlayerController playerMovement;
     private Dialogue dialogue;
     private SwordWeapon swordWeapon;
+    private AudioSource audio;
     // Start is called before the first frame update
     void Start()
     {
-        
+            audio = GetComponent<AudioSource>();
             GameObject player = GameObject.FindWithTag("Player");
             if (player != null)
             {
                 playerMovement = player.GetComponent<PlayerController>();
                 swordWeapon = player.GetComponent<SwordWeapon>();
+                
             }
         
     }
@@ -36,6 +38,7 @@ public class NPC : MonoBehaviour
             {
                 playerMovement = player.GetComponent<PlayerController>();
                 swordWeapon = player.GetComponent<SwordWeapon>();
+                
             }
         }
 
@@ -44,6 +47,7 @@ public class NPC : MonoBehaviour
             if (!prompt.activeInHierarchy)
             {
                 prompt.SetActive(true);
+                
             }
 
         }
@@ -60,6 +64,7 @@ public class NPC : MonoBehaviour
             if (!dialoguePanel.activeInHierarchy)
             {
                 dialoguePanel.SetActive(true);
+                audio.Play();
                 if (playerMovement != null)
                 {
                     playerMovement.enabled = false;
@@ -79,6 +84,21 @@ public class NPC : MonoBehaviour
                 }
 
             }
+        }
+    }
+
+    public void StopDialogueAudio()
+    {
+        if (audio != null && audio.isPlaying)
+            audio.Stop();
+    }
+
+    public void PlayDialogueAudio()
+    {
+        if (audio != null)
+        {
+            audio.Stop();   
+            audio.Play();  
         }
     }
 
