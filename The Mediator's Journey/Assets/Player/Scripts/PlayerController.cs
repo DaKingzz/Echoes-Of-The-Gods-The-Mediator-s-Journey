@@ -166,7 +166,6 @@ public class PlayerController : MonoBehaviour, IPlayer
     private readonly int animatorHashIsJumpingForward = Animator.StringToHash("isJumpingForward");
     private readonly int animatorHashIsJumpingRight = Animator.StringToHash("isJumpingRight");
     private readonly int animatorHashIsJumping = Animator.StringToHash("isJumping");
-    private readonly int animatorHashHasLanded = Animator.StringToHash("hasLanded");
 
     #endregion
 
@@ -389,7 +388,6 @@ public class PlayerController : MonoBehaviour, IPlayer
 
                 if (animator != null)
                 {
-                    animator.SetTrigger(animatorHashHasLanded);
                     animator.SetBool(animatorHashIsJumping, false);
                     animator.SetBool(animatorHashIsJumpingForward, false);
                     animator.SetBool(animatorHashIsJumpingRight, false);
