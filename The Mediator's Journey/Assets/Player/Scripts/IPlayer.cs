@@ -5,4 +5,5 @@ public interface IPlayer
     /// </summary>
     /// <param name="damage"></param>
     void TakeDamage(float damage);
+    void KillPlayer();
 }
