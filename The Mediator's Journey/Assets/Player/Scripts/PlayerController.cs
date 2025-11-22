@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -21,7 +22,6 @@ public class PlayerController : MonoBehaviour, IPlayer
         get => currentHealth;
         private set => currentHealth = Mathf.Max(0f, value);
     }
-
 
     public event Action<float> OnTookDamage;
     public event Action OnDied;
@@ -66,22 +66,27 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
-    #region Grounded-from-Velocity Configuration
+    #region Ground Check (OverlapCircle)
 
-    [Header("Grounded From Velocity")]
-    [Tooltip(
-        "If the absolute vertical velocity is less than or equal to this threshold, the player is considered grounded.")]
+    [Header("Ground Check (OverlapCircle)")]
+    [Tooltip("Transform used as the center of the ground check.")]
     [SerializeField]
-    private float groundedVerticalVelocityThreshold = 0.05f;
+    private Transform groundCheckPoint;
 
-    [Tooltip(
-        "Minimum time in seconds the vertical velocity must remain below the threshold to be treated as grounded. Helps avoid flicker on very fast physics steps.")]
+    [Tooltip("Radius of the ground check circle.")] [SerializeField]
+    private float groundCheckRadius = 0.12f;
+
+    [Tooltip("LayerMask used to detect ground.")] [SerializeField]
+    private LayerMask groundLayerMask = ~0;
+
+    [Header("Ground timing tweaks")]
+    [Tooltip("Ignore ground checks for this many seconds immediately after jumping to avoid false landings.")]
     [SerializeField]
-    private float groundedStabilityTime = 0.02f;
+    private float jumpGroundIgnoreTime = 0.06f;
 
     #endregion
 
-    #region Audio (assign AudioSource components in the editor)
+    #region Audio
 
     [Header("Audio Sources")]
     [Tooltip("AudioSource used for one-shot SFX like jump. Prefer non-looping AudioSource.")]
@@ -93,6 +98,9 @@ public class PlayerController : MonoBehaviour, IPlayer
     [SerializeField]
     private AudioSource footstepsSource;
 
+    [Tooltip("Audio source for sword attack sounds")] [SerializeField]
+    private AudioSource SwordAttackAudioSource;
+
     [Header("Audio Volumes (optional overrides)")] [Range(0f, 1f)] [SerializeField]
     private float jumpSoundVolume = 1f;
 
@@ -102,6 +110,36 @@ public class PlayerController : MonoBehaviour, IPlayer
     [Tooltip("Minimum horizontal input magnitude to consider the player 'walking'.")]
     [SerializeField]
     private float walkThreshold = 0.01f;
+
+    #endregion
+
+    #region Attack Configuration (immediate sweep on attack)
+
+    [Header("Attack Settings")]
+    [Tooltip("Child BoxCollider2D used only for defining sweep size/position. Is Trigger flag is ignored here.")]
+    [SerializeField]
+    private Collider2D damageArea; // optional: used to compute overlap box size/center; can be left null
+
+    [Tooltip("Damage applied to enemies hit by the attack.")] [SerializeField]
+    private float attackDamage = 2f;
+
+    [Tooltip("LayerMask used to filter enemies for hit detection.")] [SerializeField]
+    private LayerMask enemyLayerMask = default;
+
+    [Tooltip("If true, only first target per sweep is damaged.")] [SerializeField]
+    private bool stopAfterFirstHit = false;
+
+    [Header("Attack Cooldown")] [Tooltip("Minimum time in seconds between player attacks.")] [SerializeField]
+    private float attackCooldown = 0.35f;
+
+    // temporary per-sweep set (prevents duplicate hits in same sweep)
+    private readonly HashSet<Collider2D> hitsThisSweep = new HashSet<Collider2D>();
+
+    // animator trigger hash for attack
+    private readonly int animatorHashAttack = Animator.StringToHash("isAttacking");
+
+    // last attack timestamp
+    private float lastAttackTime = -Mathf.Infinity;
 
     #endregion
 
@@ -137,11 +175,13 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     private bool isFacingRight = true;
     private bool isGrounded;
-    private float timeWhenVerticalBelowThreshold = -Mathf.Infinity;
     private float timeWhenJumpStarted = -Mathf.Infinity;
 
     // walking audio state
     private bool wasWalkingPlaying = false;
+
+    // track whether we are in a jump phase (set when a jump starts, cleared when grounded after leaving)
+    private bool isInJumpPhase = false;
 
     #endregion
 
@@ -200,8 +240,8 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     private void FixedUpdate()
     {
-        // Determine grounded state using vertical velocity
-        RefreshGroundedStateFromVelocity();
+        // Determine grounded state using overlap circle (with short ignore window after jumping)
+        RefreshGroundedStateFromOverlap();
 
         // Compute desired velocity locally and assign once at the end
         Vector2 computedVelocity = rigidBody2D.velocity;
@@ -210,11 +250,12 @@ public class PlayerController : MonoBehaviour, IPlayer
         float horizontalSpeed = movementInput.x * (runInputHeld ? movementSpeed * runSpeedMultiplier : movementSpeed);
         computedVelocity.x = horizontalSpeed;
 
-        // Jump start: consume the pressed flag and only allow jumps when considered grounded
+        // Jump start: consume the pressed flag and only allow jumps when grounded
         if (jumpPressedThisFrame && isGrounded)
         {
             computedVelocity.y = initialJumpVelocity;
             timeWhenJumpStarted = Time.fixedTime;
+            isInJumpPhase = true;
 
             // play jump SFX using sfxSource: prefer PlayOneShot if clip assigned, otherwise Play()
             if (sfxSource != null)
@@ -250,34 +291,35 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
-    #region Grounded-from-Velocity Logic
+    #region Ground Check (OverlapCircle) Implementation
 
-    /// <summary>
-    /// Uses the Rigidbody2D vertical velocity to determine if the player is grounded.
-    /// The player is treated as grounded when the absolute vertical velocity stays below a small threshold
-    /// for groundedStabilityTime seconds to avoid flicker from physics steps.
-    /// </summary>
-    private void RefreshGroundedStateFromVelocity()
+    private void RefreshGroundedStateFromOverlap()
     {
-        float absoluteVerticalSpeed = Mathf.Abs(rigidBody2D.velocity.y);
+        bool prevGrounded = isGrounded;
 
-        if (absoluteVerticalSpeed <= groundedVerticalVelocityThreshold)
+        if (groundCheckPoint == null)
         {
-            // record when vertical velocity dropped below threshold
-            if (timeWhenVerticalBelowThreshold == -Mathf.Infinity)
-                timeWhenVerticalBelowThreshold = Time.fixedTime;
-
-            // require stability time to consider grounded to prevent flicker
-            if (Time.fixedTime - timeWhenVerticalBelowThreshold >= groundedStabilityTime)
-                isGrounded = true;
-            else
-                isGrounded = false;
+            // Fallback: approximate grounded by checking small ray under collider if no point assigned
+            Vector2 origin = (Vector2)transform.position;
+            float checkDist = 0.1f;
+            RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, checkDist, groundLayerMask);
+            isGrounded = hit.collider != null;
         }
         else
         {
-            // reset timer when vertical speed goes above threshold
-            timeWhenVerticalBelowThreshold = -Mathf.Infinity;
+            isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayerMask);
+        }
+
+        // If we just started a jump, ignore ground checks for a very short window to avoid false positives
+        if (isInJumpPhase && (Time.fixedTime - timeWhenJumpStarted) <= jumpGroundIgnoreTime)
+        {
             isGrounded = false;
+        }
+
+        // detect landing (for clearing the jump phase)
+        if (isGrounded && !prevGrounded)
+        {
+            isInJumpPhase = false;
         }
     }
 
@@ -333,6 +375,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     /// <summary>
     /// Updates animator parameters used purely for visuals.
+    /// Jump animation is driven by explicit jump phase (isInJumpPhase) rather than Y velocity.
     /// </summary>
     private void UpdateAnimatorVisuals()
     {
@@ -340,7 +383,8 @@ public class PlayerController : MonoBehaviour, IPlayer
 
         animator.SetBool(animatorHashIsWalking, Mathf.Abs(movementInput.x) > 0.01f && isGrounded);
 
-        if (!isGrounded)
+        // Drive jump visuals using the explicit jump phase flag
+        if (isInJumpPhase)
         {
             bool movingHorizontally = Mathf.Abs(movementInput.x) > 0.01f;
             animator.SetBool(animatorHashIsJumpingRight, movingHorizontally);
@@ -399,6 +443,30 @@ public class PlayerController : MonoBehaviour, IPlayer
         else if (context.canceled) runInputHeld = false;
     }
 
+    /// <summary>
+    /// Attack Input callback. Performs the animator trigger and immediately performs a sweep to damage enemies.
+    /// Enforces an editable cooldown between attacks.
+    /// </summary>
+    public void OnAttack(InputAction.CallbackContext context)
+    {
+        if (!context.performed || animator == null) return;
+
+        // enforce cooldown
+        if (Time.time - lastAttackTime < attackCooldown) return;
+
+        // record attack time
+        lastAttackTime = Time.time;
+
+        // trigger animator and perform sweep / sound
+        animator.SetTrigger(animatorHashAttack);
+
+        // play sword audio if assigned
+        if (SwordAttackAudioSource != null)
+            SwordAttackAudioSource.Play();
+
+        DoAttackSweep();
+    }
+
     #endregion
 
     #region Facing / Visual Flip
@@ -447,6 +515,53 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
+    #region Attack Sweep (immediate damage on input)
+
+    /// <summary>
+    /// Performs an instantaneous physics overlap (box) using the damageArea's transform/size if available,
+    /// otherwise logs an error. Applies damage immediately to IEnemy targets found.
+    /// </summary>
+    private void DoAttackSweep()
+    {
+        hitsThisSweep.Clear();
+
+        // Determine centre, size and angle for the overlap box
+        Vector2 centre;
+        Vector2 size;
+        float angle = 0f;
+
+        if (damageArea is BoxCollider2D box)
+        {
+            size = Vector2.Scale(box.size, box.transform.lossyScale);
+            centre = (Vector2)box.transform.position + box.offset;
+            angle = box.transform.eulerAngles.z;
+        }
+        else
+        {
+            Debug.LogError(
+                "PlayerController.DoAttackSweep: damageArea is not assigned or not a BoxCollider2D. Using default small box in front of player.");
+            return;
+        }
+
+        Collider2D[] hits = Physics2D.OverlapBoxAll(centre, size, angle, enemyLayerMask);
+        foreach (var hit in hits)
+        {
+            if (hit == null) continue;
+            if (hitsThisSweep.Contains(hit)) continue;
+            hitsThisSweep.Add(hit);
+
+            var damageable = hit.GetComponent<IEnemy>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(attackDamage);
+            }
+
+            if (stopAfterFirstHit) break;
+        }
+    }
+
+    #endregion
+
     #region Health and Damage
 
     /// <summary>
@@ -456,12 +571,11 @@ public class PlayerController : MonoBehaviour, IPlayer
     {
         if (damage <= 0f) return;
 
-        currentHealth -= damage;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, maximumHealth);
+        CurrentHealth = Mathf.Clamp(CurrentHealth - damage, 0f, maximumHealth);
 
         OnTookDamage?.Invoke(damage);
 
-        if (currentHealth <= 0f)
+        if (CurrentHealth <= 0f)
             HandleDeath();
     }
 
@@ -485,6 +599,22 @@ public class PlayerController : MonoBehaviour, IPlayer
         Gizmos.color = Color.yellow;
         Vector3 origin = transform.position;
         Gizmos.DrawLine(origin + Vector3.left * 0.5f, origin + Vector3.right * 0.5f);
+
+        // Draw damageArea bounds if assigned and visible in editor
+        if (damageArea is BoxCollider2D box)
+        {
+            Gizmos.color = Color.red;
+            Vector2 size = Vector2.Scale(box.size, box.transform.lossyScale);
+            Vector3 pos = box.transform.position + (Vector3)box.offset;
+            Gizmos.DrawWireCube(pos, new Vector3(size.x, size.y, 0f));
+        }
+
+        // draw ground check
+        if (groundCheckPoint != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
+        }
     }
 #endif
 
