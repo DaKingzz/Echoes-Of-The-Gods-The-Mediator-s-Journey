@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(Animator))]
 public class PlayerController : MonoBehaviour, IPlayer
 {
+    // Get Respawn Point Later
+    public Transform playerRespawn;
+
     #region Health
 
     [Header("Health Settings")]
@@ -24,7 +27,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 
 
     public event Action<float> OnTookDamage;
-    public event Action OnDied;
+    public event Action OnDeath;
 
     #endregion
 
@@ -159,6 +162,16 @@ public class PlayerController : MonoBehaviour, IPlayer
         rigidBody2D = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<Collider2D>();
         animator = GetComponent<Animator>();
+
+        if (playerRespawn != null)
+        {
+            Debug.Log("Found TargetObject Transform: " + playerRespawn.position);
+        }
+        else
+        {
+            Debug.LogWarning("TargetObject not found!");
+        }
+
 
         // Auto-resolve audio sources if the designer didn't assign them
         AudioSource[] sources = GetComponents<AudioSource>();
@@ -462,16 +475,17 @@ public class PlayerController : MonoBehaviour, IPlayer
         OnTookDamage?.Invoke(damage);
 
         if (currentHealth <= 0f)
-            HandleDeath();
+            KillPlayer();
     }
-
+    
     /// <summary>
-    /// Handles death: fires death event then destroys the GameObject.
+    /// Kills the player, sets hp to 0
     /// </summary>
-    private void HandleDeath()
+    public void KillPlayer()
     {
-        OnDied?.Invoke();
-        Destroy(gameObject);
+        currentHealth = 0;
+        transform.position = playerRespawn.position;
+        OnDeath?.Invoke();
     }
 
     #endregion
