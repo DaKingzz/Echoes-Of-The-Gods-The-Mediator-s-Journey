@@ -86,6 +86,19 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
+    #region Landing / Animation lock
+
+    [Header("Jump animation lock")]
+    [Tooltip(
+        "Time (seconds) to wait before allowing hasLanded to fire after a jump start. Set this to your jump animation length.")]
+    [SerializeField]
+    private float jumpAnimationLockTime = 0.0f;
+
+    // fixed-time until which land trigger is ignored
+    private float landingIgnoreUntilFixed = -Mathf.Infinity;
+
+    #endregion
+
     #region Audio
 
     [Header("Audio Sources")]
@@ -152,6 +165,8 @@ public class PlayerController : MonoBehaviour, IPlayer
     private readonly int animatorHashIsWalking = Animator.StringToHash("isWalking");
     private readonly int animatorHashIsJumpingForward = Animator.StringToHash("isJumpingForward");
     private readonly int animatorHashIsJumpingRight = Animator.StringToHash("isJumpingRight");
+    private readonly int animatorHashIsJumping = Animator.StringToHash("isJumping");
+    private readonly int animatorHashHasLanded = Animator.StringToHash("hasLanded");
 
     #endregion
 
@@ -182,6 +197,16 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     // track whether we are in a jump phase (set when a jump starts, cleared when grounded after leaving)
     private bool isInJumpPhase = false;
+
+    // last non-zero horizontal input sign while airborne: -1 = left, 0 = none, +1 = right
+    private int lastAirMovementSign = 0;
+
+    // whether an airborne-forward state is currently active (true means in-air pose is left/right)
+    private bool airborneForwardActive = false;
+
+    // once true (set when airborneForwardActive is exited by releasing input), player cannot re-enter airborneForwardActive until landing.
+    // pressing the opposite direction still allowed and will set airborneForwardActive = true again.
+    private bool preventReenterAirForwardUntilLand = false;
 
     #endregion
 
@@ -230,6 +255,9 @@ public class PlayerController : MonoBehaviour, IPlayer
 
         rigidBody2D.gravityScale = baseGravityScale;
         currentHealth = Mathf.Clamp(maximumHealth, 0f, maximumHealth);
+
+        // initialize lastFrameGrounded state to avoid false landing on start
+        lastFrameGrounded = CheckGroundImmediate();
     }
 
     private void Update()
@@ -257,6 +285,15 @@ public class PlayerController : MonoBehaviour, IPlayer
             timeWhenJumpStarted = Time.fixedTime;
             isInJumpPhase = true;
 
+            // when jump begins, initialize airborne direction fields from current input if any
+            InitializeAirborneDirectionOnJump();
+
+            // start landing ignore window (fixed-time)
+            landingIgnoreUntilFixed = Time.fixedTime + jumpAnimationLockTime;
+
+            // ensure previous-grounded false so transition requires real leave+return
+            lastFrameGrounded = false;
+
             // play jump SFX using sfxSource: prefer PlayOneShot if clip assigned, otherwise Play()
             if (sfxSource != null)
             {
@@ -273,6 +310,12 @@ public class PlayerController : MonoBehaviour, IPlayer
         {
             // ensure we don't keep stale pressed flag
             jumpPressedThisFrame = false;
+        }
+
+        // While airborne, handle input-driven direction changes using the air-direction rules
+        if (isInJumpPhase)
+        {
+            HandleAirborneDirectionRules();
         }
 
         // Sustained jump while holding: variable jump height mechanic
@@ -293,13 +336,29 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #region Ground Check (OverlapCircle) Implementation
 
+    private bool CheckGroundImmediate()
+    {
+        if (groundCheckPoint == null)
+        {
+            Vector2 origin = (Vector2)transform.position;
+            float checkDist = 0.1f;
+            RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, checkDist, groundLayerMask);
+            return hit.collider != null;
+        }
+        else
+        {
+            return Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayerMask) != null;
+        }
+    }
+
+    private bool lastFrameGrounded = false;
+
     private void RefreshGroundedStateFromOverlap()
     {
-        bool prevGrounded = isGrounded;
+        bool prevGrounded = lastFrameGrounded;
 
         if (groundCheckPoint == null)
         {
-            // Fallback: approximate grounded by checking small ray under collider if no point assigned
             Vector2 origin = (Vector2)transform.position;
             float checkDist = 0.1f;
             RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, checkDist, groundLayerMask);
@@ -316,10 +375,115 @@ public class PlayerController : MonoBehaviour, IPlayer
             isGrounded = false;
         }
 
-        // detect landing (for clearing the jump phase)
-        if (isGrounded && !prevGrounded)
+        // Landing detection: only fire when we were NOT grounded previously and are now grounded,
+        // the landing-ignore timer (fixed) has expired, and we actually started a jump.
+        if (isGrounded && !prevGrounded && isInJumpPhase)
         {
-            isInJumpPhase = false;
+            if (Time.fixedTime >= landingIgnoreUntilFixed)
+            {
+                // actual landing: clear jump phase and fire animator
+                isInJumpPhase = false;
+                airborneForwardActive = false;
+                preventReenterAirForwardUntilLand = false;
+                lastAirMovementSign = 0;
+
+                if (animator != null)
+                {
+                    animator.SetTrigger(animatorHashHasLanded);
+                    animator.SetBool(animatorHashIsJumping, false);
+                    animator.SetBool(animatorHashIsJumpingForward, false);
+                    animator.SetBool(animatorHashIsJumpingRight, false);
+                }
+            }
+            // else still locked by animation timer: do nothing now
+        }
+
+        // store for next frame
+        lastFrameGrounded = isGrounded;
+    }
+
+    #endregion
+
+    #region Airborne direction rules (core)
+
+    // Called at the instant of jump to initialize airborne direction state from input (if any).
+    private void InitializeAirborneDirectionOnJump()
+    {
+        float x = movementInput.x;
+        if (Mathf.Abs(x) > 0.01f)
+        {
+            // player jumped while holding left/right -> enter airborne-forward state
+            lastAirMovementSign = x > 0f ? 1 : -1;
+            airborneForwardActive = true;
+            preventReenterAirForwardUntilLand = false;
+        }
+        else
+        {
+            // jumped from standing/no-horiz input -> no airborne-forward active
+            lastAirMovementSign = 0;
+            airborneForwardActive = false;
+            preventReenterAirForwardUntilLand = false;
+        }
+
+        // Set generic jump animator flag
+        if (animator != null)
+            animator.SetBool(animatorHashIsJumping, true);
+    }
+
+    // Called while isInJumpPhase each FixedUpdate to enforce the rules:
+    // - pressing L/R while airborne sets or changes airborne-forward.
+    // - releasing input while airborne exits airborne-forward and prevents reentry until landing.
+    private void HandleAirborneDirectionRules()
+    {
+        float x = movementInput.x;
+        int inputSign = 0;
+        if (Mathf.Abs(x) > 0.01f) inputSign = x > 0f ? 1 : -1;
+
+        if (inputSign != 0)
+        {
+            // player is pressing left or right while airborne
+            if (!airborneForwardActive)
+            {
+                // allow entering forward state only if not prevented OR if changing direction relative to remembered sign
+                if (!preventReenterAirForwardUntilLand)
+                {
+                    lastAirMovementSign = inputSign;
+                    airborneForwardActive = true;
+                    preventReenterAirForwardUntilLand = false;
+                }
+                else
+                {
+                    // prevented: only allow if it's an actual direction change relative to lastAirMovementSign
+                    if (lastAirMovementSign != 0 && inputSign != lastAirMovementSign)
+                    {
+                        lastAirMovementSign = inputSign;
+                        airborneForwardActive = true;
+                        preventReenterAirForwardUntilLand = false;
+                    }
+                    // else ignore
+                }
+            }
+            else
+            {
+                // active already: allow immediate change if opposite pressed
+                if (inputSign != lastAirMovementSign)
+                {
+                    lastAirMovementSign = inputSign;
+                    airborneForwardActive = true;
+                    preventReenterAirForwardUntilLand = false;
+                }
+            }
+        }
+        else
+        {
+            // input released while airborne
+            if (airborneForwardActive)
+            {
+                // exit forward state and prevent re-entry of same direction until land
+                airborneForwardActive = false;
+                preventReenterAirForwardUntilLand = true;
+                // keep lastAirMovementSign so visuals can "stick"
+            }
         }
     }
 
@@ -375,25 +539,40 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     /// <summary>
     /// Updates animator parameters used purely for visuals.
-    /// Jump animation is driven by explicit jump phase (isInJumpPhase) rather than Y velocity.
+    /// This version uses lastAirMovementSign as the source of the visual "stuck" direction while airborne.
+    /// Releasing input does not change visuals; only landing clears the remembered direction.
     /// </summary>
     private void UpdateAnimatorVisuals()
     {
         if (animator == null) return;
 
+        // walking only on ground
         animator.SetBool(animatorHashIsWalking, Mathf.Abs(movementInput.x) > 0.01f && isGrounded);
 
-        // Drive jump visuals using the explicit jump phase flag
+        // Airborne visuals: stick to lastAirMovementSign if present.
         if (isInJumpPhase)
         {
-            bool movingHorizontally = Mathf.Abs(movementInput.x) > 0.01f;
-            animator.SetBool(animatorHashIsJumpingRight, movingHorizontally);
-            animator.SetBool(animatorHashIsJumpingForward, !movingHorizontally);
+            if (lastAirMovementSign != 0)
+            {
+                // show horizontal-air pose matching the remembered direction
+                animator.SetBool(animatorHashIsJumpingRight, true);
+                animator.SetBool(animatorHashIsJumpingForward, false);
+            }
+            else
+            {
+                // no remembered horizontal direction: show forward (non-horizontal) jump pose
+                animator.SetBool(animatorHashIsJumpingRight, false);
+                animator.SetBool(animatorHashIsJumpingForward, true);
+            }
+
+            animator.SetBool(animatorHashIsJumping, true);
         }
         else
         {
+            // on ground: clear airborne flags
             animator.SetBool(animatorHashIsJumpingRight, false);
             animator.SetBool(animatorHashIsJumpingForward, false);
+            animator.SetBool(animatorHashIsJumping, false);
         }
     }
 
@@ -408,11 +587,9 @@ public class PlayerController : MonoBehaviour, IPlayer
     {
         movementInput = context.ReadValue<Vector2>();
 
-        // Flip visual facing when horizontal direction changes
-        if (movementInput.x > 0f && !isFacingRight)
-            FlipFacingDirection();
-        else if (movementInput.x < 0f && isFacingRight)
-            FlipFacingDirection();
+        // Immediate visual facing flip when pressing direction
+        if (movementInput.x > 0f && !isFacingRight) FlipFacingDirection();
+        else if (movementInput.x < 0f && isFacingRight) FlipFacingDirection();
     }
 
     /// <summary>
@@ -445,7 +622,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     /// <summary>
     /// Attack Input callback. Performs the animator trigger and immediately performs a sweep to damage enemies.
-    /// Enforces an editable cooldown between attacks.
+    /// When attacking in-air we re-apply the remembered airborne direction so the attack doesn't force idle.
     /// </summary>
     public void OnAttack(InputAction.CallbackContext context)
     {
@@ -460,7 +637,13 @@ public class PlayerController : MonoBehaviour, IPlayer
         // trigger animator and perform sweep / sound
         animator.SetTrigger(animatorHashAttack);
 
-        // play sword audio if assigned
+        // If attacking while airborne, re-apply the remembered visual direction so animation returns to it.
+        if (isInJumpPhase && lastAirMovementSign != 0)
+        {
+            animator.SetBool(animatorHashIsJumpingRight, true);
+            animator.SetBool(animatorHashIsJumpingForward, false);
+        }
+
         if (SwordAttackAudioSource != null)
             SwordAttackAudioSource.Play();
 
