@@ -1440,6 +1440,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4039227461348744558, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4745138215948908590, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
       propertyPath: mode
       value: 1
@@ -1480,6 +1484,30 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5826266284521250415, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 8361ee3c65d69324089ae2e4f39a2534, type: 2}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: waypoints.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: waypoints.Array.data[1]
+      value: 
+      objectReference: {fileID: 1034961003}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: waypoints.Array.data[2]
+      value: 
+      objectReference: {fileID: 52403672}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: waypoints.Array.data[3]
+      value: 
+      objectReference: {fileID: 1232660002}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: waypoints.Array.data[4]
+      value: 
+      objectReference: {fileID: 986150745}
     - target: {fileID: 8234607800063166669, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
       propertyPath: mode
       value: 0

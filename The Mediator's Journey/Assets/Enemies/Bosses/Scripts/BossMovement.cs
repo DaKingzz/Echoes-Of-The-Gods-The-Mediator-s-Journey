@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 /// <summary>
@@ -11,9 +10,8 @@ using UnityEngine;
 /// Notes:
 /// - No rotation is written anywhere.
 /// - No curves. Movement uses a single speed value and deterministic MovePosition.
-/// - Optional visualRoot compensates for scaled visuals (waypoints target the visual).
 /// </summary>
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
 public class BossMovement : MonoBehaviour, IEnemy
 {
     public enum MovementMode
@@ -25,46 +23,49 @@ public class BossMovement : MonoBehaviour, IEnemy
     [Header("Core")] public MovementMode mode = MovementMode.Loop;
 
     [Tooltip("Ordered world-space points the boss will visit in sequence.")]
-    [SerializeField] private List<Transform> waypoints = new List<Transform>();
-
-    [Tooltip("Optional: the Transform to treat as the visual pivot. If set, waypoints target this visual position;\n" +
-             "the physics/root will be moved so the visual aligns with the waypoint (useful when visual is offset or scaled).")]
-    [SerializeField] private Transform visualRoot;
+    public List<Transform> waypoints = new List<Transform>();
 
     [Header("Motion")] [Tooltip("Movement speed in world units per second.")]
-    [SerializeField] private float speed = 3f;
+    public float speed = 3f;
 
     [Tooltip("How close (world units) we must be to consider the waypoint reached.")]
-    [SerializeField] private float arrivalThreshold = 0.05f;
+    public float arrivalThreshold = 0.05f;
 
     [Header("Timing")] [Tooltip("Pause at waypoint (seconds).")]
-    [SerializeField] private float pauseAtWaypoint = 0.25f;
+    public float pauseAtWaypoint = 0.25f;
 
     [Header("Random")] [Range(0f, 1f)] public float randomBiasTowardsPlayer = 0.4f;
-    [SerializeField] private Transform player;
+    public Transform player;
 
     [Header("Behavior")]
     [Tooltip("If true the waypoint list loops (Loop mode). RandomWalk always continues picking points.")]
-    [SerializeField] private bool loop = true;
-    
-    [Header("Health")]
-    [SerializeField] private float maxHealth = 30f;
-    private float currentHealth;
+    public bool loop = true;
+
+    [Header("Health")] [Tooltip("Maximum health of the boss")]
+    public float maxHealth = 100f;
 
     // Runtime
     Rigidbody2D rb;
+    Animator animator;
     int index = 0;
     System.Random rng;
+    private float currentHealth;
 
-    BossMovement()
-    {
-        currentHealth = maxHealth;
-    }
+    // Animation parameter IDs (cached for performance)
+    private int isDeadHash;
+    private int isHitHash;
 
     void Awake()
     {
+        currentHealth = maxHealth;
+
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
         rng = new System.Random();
+
+        // Cache animation parameter IDs
+        isDeadHash = Animator.StringToHash("isDead");
+        isHitHash = Animator.StringToHash("isHit");
 
         if (rb != null)
         {
@@ -113,6 +114,35 @@ public class BossMovement : MonoBehaviour, IEnemy
         }
     }
 
+    public bool TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+
+        // Trigger hit animation
+        if (animator != null)
+        {
+            animator.SetTrigger(isHitHash);
+        }
+
+        if (currentHealth <= 0f)
+        {
+            currentHealth = 0f;
+
+            // Set death animation
+            if (animator != null)
+            {
+                animator.SetBool(isDeadHash, true);
+            }
+
+            // Boss defeated
+            StopAllCoroutines();
+            gameObject.SetActive(false);
+            return true;
+        }
+
+        return false;
+    }
+
     IEnumerator LoopRoutine()
     {
         while (mode == MovementMode.Loop)
@@ -146,42 +176,23 @@ public class BossMovement : MonoBehaviour, IEnemy
         if (waypoints[waypointIndex] == null)
             yield break;
 
-        Vector2 visualTarget = waypoints[waypointIndex].position;
+        Vector2 target = waypoints[waypointIndex].position;
         while (true)
         {
-            Vector2 currentRoot = rb != null ? rb.position : (Vector2)transform.position;
-            Vector2 rootTarget = RootPositionForVisualWorldTarget(visualTarget);
-            float dist = Vector2.Distance(currentRoot, rootTarget);
+            Vector2 currentPos = rb != null ? rb.position : (Vector2)transform.position;
+            float dist = Vector2.Distance(currentPos, target);
             if (dist <= arrivalThreshold) break;
-            Vector2 next = Vector2.MoveTowards(currentRoot, rootTarget, speed * Time.deltaTime);
+            Vector2 next = Vector2.MoveTowards(currentPos, target, speed * Time.deltaTime);
             if (rb != null) rb.MovePosition(next);
             else transform.position = (Vector3)next;
             yield return null;
         }
 
         // snap exactly
-        Vector2 finalRoot = RootPositionForVisualWorldTarget(visualTarget);
-        if (rb != null) rb.position = finalRoot;
-        else transform.position = (Vector3)finalRoot;
+        if (rb != null) rb.position = target;
+        else transform.position = (Vector3)target;
 
         yield break;
-    }
-
-    // Helper to compute which root position (physics root) will place visualRoot at desiredVisualWorldPos
-    Vector2 RootPositionForVisualWorldTarget(Vector2 desiredVisualWorldPos)
-    {
-        if (visualRoot == null)
-            return desiredVisualWorldPos;
-
-        Vector2 visualWorldPos = visualRoot.position;
-        Vector2 rootWorldPos = transform.position;
-        Vector2 offset = visualWorldPos - rootWorldPos;
-        return desiredVisualWorldPos - offset;
-    }
-
-    Vector2 GetVisualPosition()
-    {
-        return visualRoot != null ? (Vector2)visualRoot.position : (Vector2)transform.position;
     }
 
     int ClosestWaypointIndexTo(Vector2 worldPos)
@@ -201,18 +212,6 @@ public class BossMovement : MonoBehaviour, IEnemy
         }
 
         return best;
-    }
-
-    public bool TakeDamage(float damage)
-    {
-        currentHealth -= damage;
-        if (currentHealth <= 0f)
-        {
-            Destroy(gameObject);
-            return true;
-        }
-
-        return false;
     }
 
 #if UNITY_EDITOR
@@ -334,7 +333,7 @@ public class BossMovement : MonoBehaviour, IEnemy
         // Draw line from boss to current target when playing
         if (Application.isPlaying && highlightCurrentTarget && index < waypoints.Count && waypoints[index] != null)
         {
-            Vector3 bossPos = GetVisualPosition();
+            Vector3 bossPos = rb != null ? (Vector3)rb.position : transform.position;
             Gizmos.color = Color.green;
             Gizmos.DrawLine(bossPos, waypoints[index].position);
         }
