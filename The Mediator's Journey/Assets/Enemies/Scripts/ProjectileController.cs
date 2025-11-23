@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class Fireball : MonoBehaviour
+[RequireComponent(typeof(Rigidbody2D))]
+public class ProjectileController : MonoBehaviour
 {
     [SerializeField] private float lifetime = 3f;
     [SerializeField] private float damage = 1.5f;
@@ -14,15 +15,18 @@ public class Fireball : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-
     public void Initialize(Vector2 dir, float spd)
     {
         direction = dir.normalized;
         speed = spd;
         rb.velocity = direction * speed;
+        
+        // Rotate the projectile to face the direction it's moving
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        
         Destroy(gameObject, lifetime);
     }
-
 
     private void Update()
     {

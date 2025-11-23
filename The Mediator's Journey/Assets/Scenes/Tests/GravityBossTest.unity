@@ -1400,6 +1400,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3217930818495618568, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: target
+      value: 
+      objectReference: {fileID: 196331024}
     - target: {fileID: 4039227461348744558, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1488,6 +1492,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 8361ee3c65d69324089ae2e4f39a2534, type: 2}
+    - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 196331024}
     - target: {fileID: 6649816711842230993, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
       propertyPath: waypoints.Array.size
       value: 5

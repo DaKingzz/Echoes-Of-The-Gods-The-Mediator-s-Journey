@@ -44,6 +44,20 @@ public class BossMovement : MonoBehaviour, IEnemy
     [Header("Health")] [Tooltip("Maximum health of the boss")]
     public float maxHealth = 100f;
 
+    [Header("Attack")] [Tooltip("Reference to the attack component")] [SerializeField]
+    private HomingProjectileAttackController attackComponent;
+
+    [Tooltip("Should boss attack at each waypoint?")] [SerializeField]
+    private bool attackAtWaypoints = true;
+
+    [Tooltip("Should boss attack while moving?")] [SerializeField]
+    private bool attackWhileMoving = true;
+
+    [Tooltip("Time between mid-movement attacks")] [SerializeField]
+    private float movementAttackInterval = 2f;
+
+    private float lastMovementAttackTime;
+
     // Runtime
     Rigidbody2D rb;
     Animator animator;
@@ -66,6 +80,12 @@ public class BossMovement : MonoBehaviour, IEnemy
         // Cache animation parameter IDs
         isDeadHash = Animator.StringToHash("isDead");
         isHitHash = Animator.StringToHash("isHit");
+
+        // Get attack component if not assigned
+        if (attackComponent == null)
+        {
+            attackComponent = GetComponent<HomingProjectileAttackController>();
+        }
 
         if (rb != null)
         {
@@ -148,6 +168,13 @@ public class BossMovement : MonoBehaviour, IEnemy
         while (mode == MovementMode.Loop)
         {
             yield return MoveToWaypoint(index);
+
+            // Attack at waypoint if enabled
+            if (attackAtWaypoints && attackComponent != null)
+            {
+                attackComponent.TryAttack();
+            }
+
             // Advance index and wrap
             index = (index + 1) % Mathf.Max(1, waypoints.Count);
             yield return new WaitForSeconds(pauseAtWaypoint);
@@ -164,6 +191,13 @@ public class BossMovement : MonoBehaviour, IEnemy
                 next = ClosestWaypointIndexTo(player.position);
             index = next;
             yield return MoveToWaypoint(index);
+
+            // Attack at waypoint if enabled
+            if (attackAtWaypoints && attackComponent != null)
+            {
+                attackComponent.TryAttack();
+            }
+
             yield return new WaitForSeconds(pauseAtWaypoint * (0.5f + (float)rng.NextDouble()));
         }
     }
@@ -185,6 +219,17 @@ public class BossMovement : MonoBehaviour, IEnemy
             Vector2 next = Vector2.MoveTowards(currentPos, target, speed * Time.deltaTime);
             if (rb != null) rb.MovePosition(next);
             else transform.position = (Vector3)next;
+
+            // Try to attack while moving if enabled
+            if (attackWhileMoving && attackComponent != null &&
+                Time.time - lastMovementAttackTime >= movementAttackInterval)
+            {
+                if (attackComponent.TryAttack())
+                {
+                    lastMovementAttackTime = Time.time;
+                }
+            }
+
             yield return null;
         }
 
