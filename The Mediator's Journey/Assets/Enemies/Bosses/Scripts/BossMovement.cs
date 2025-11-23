@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +14,7 @@ using UnityEngine;
 /// - Optional visualRoot compensates for scaled visuals (waypoints target the visual).
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
-public class BossMovement : MonoBehaviour
+public class BossMovement : MonoBehaviour, IEnemy
 {
     public enum MovementMode
     {
@@ -24,32 +25,41 @@ public class BossMovement : MonoBehaviour
     [Header("Core")] public MovementMode mode = MovementMode.Loop;
 
     [Tooltip("Ordered world-space points the boss will visit in sequence.")]
-    public List<Transform> waypoints = new List<Transform>();
+    [SerializeField] private List<Transform> waypoints = new List<Transform>();
 
     [Tooltip("Optional: the Transform to treat as the visual pivot. If set, waypoints target this visual position;\n" +
              "the physics/root will be moved so the visual aligns with the waypoint (useful when visual is offset or scaled).")]
-    public Transform visualRoot;
+    [SerializeField] private Transform visualRoot;
 
     [Header("Motion")] [Tooltip("Movement speed in world units per second.")]
-    public float speed = 3f;
+    [SerializeField] private float speed = 3f;
 
     [Tooltip("How close (world units) we must be to consider the waypoint reached.")]
-    public float arrivalThreshold = 0.05f;
+    [SerializeField] private float arrivalThreshold = 0.05f;
 
     [Header("Timing")] [Tooltip("Pause at waypoint (seconds).")]
-    public float pauseAtWaypoint = 0.25f;
+    [SerializeField] private float pauseAtWaypoint = 0.25f;
 
     [Header("Random")] [Range(0f, 1f)] public float randomBiasTowardsPlayer = 0.4f;
-    public Transform player;
+    [SerializeField] private Transform player;
 
     [Header("Behavior")]
     [Tooltip("If true the waypoint list loops (Loop mode). RandomWalk always continues picking points.")]
-    public bool loop = true;
+    [SerializeField] private bool loop = true;
+    
+    [Header("Health")]
+    [SerializeField] private float maxHealth = 30f;
+    private float currentHealth;
 
     // Runtime
     Rigidbody2D rb;
     int index = 0;
     System.Random rng;
+
+    BossMovement()
+    {
+        currentHealth = maxHealth;
+    }
 
     void Awake()
     {
@@ -191,6 +201,18 @@ public class BossMovement : MonoBehaviour
         }
 
         return best;
+    }
+
+    public bool TakeDamage(float damage)
+    {
+        currentHealth -= damage;
+        if (currentHealth <= 0f)
+        {
+            Destroy(gameObject);
+            return true;
+        }
+
+        return false;
     }
 
 #if UNITY_EDITOR
