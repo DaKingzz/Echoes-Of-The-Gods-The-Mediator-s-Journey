@@ -55,7 +55,7 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         if (!isFull) return; 
         
         if (thisItemSelected)
-         {
+        {
             inventoryManager.DeselectAllSlots();
 
             // Attempt to use key ONLY if touching a portal
@@ -64,6 +64,10 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
             {
                 if (portal.IsPlayerTouching && portal.requiredKeyName == itemName)
                 {
+                    // --- PLAY SUCCESS SOUND ---
+                    if (inventoryManager.audioSource && inventoryManager.sfxUnlockSuccess)
+                        inventoryManager.audioSource.PlayOneShot(inventoryManager.sfxUnlockSuccess);
+
                     // Unlock portal
                     portal.UnlockPortal();
                     inventoryManager.MarkKeyUsed(itemName);
@@ -77,6 +81,11 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
                     return; // only use on one portal
                 }
             }
+
+            // --- NO PORTAL FOUND OR WRONG KEY ---
+            if (inventoryManager.audioSource && inventoryManager.sfxUnlockFail)
+                inventoryManager.audioSource.PlayOneShot(inventoryManager.sfxUnlockFail);
+
         }
 
         else

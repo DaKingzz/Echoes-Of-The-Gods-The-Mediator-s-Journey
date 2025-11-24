@@ -14,7 +14,13 @@ public class InventoryManager : MonoBehaviour
     private HashSet<string> usedKeys = new HashSet<string>();
     private HashSet<string> pickedUpItems = new HashSet<string>();
 
-    public string currentSelectedKey; 
+    public string currentSelectedKey;
+
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip sfxUnlockSuccess;
+    public AudioClip sfxUnlockFail; 
+
 
     private void Awake()
     {
