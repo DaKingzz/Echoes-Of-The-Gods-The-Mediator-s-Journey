@@ -5,14 +5,11 @@ public class HomingProjectileController : MonoBehaviour
     [Header("Projectile Stats")] [SerializeField]
     private float lifetime = 5f;
 
-    [SerializeField] private float damage = 1.5f;
-    [SerializeField] private float speed = 8f;
-
-    [Header("Homing Behavior")] [SerializeField]
-    private float turnSpeed = 120f; // Degrees per second
-
-    [SerializeField] private float homingDuration = 3f; // How long it tracks before going straight
-    [SerializeField] private float minDistanceToHome = 0.5f; // Stop homing if too close
+    private float damage;
+    private float speed;
+    private float turnSpeed; // Degrees per second
+    private float homingDuration; // How long it tracks before going straight
+    private float minDistanceToHome; // Stop homing if too close
 
     private Transform target;
     private Vector2 direction;
@@ -25,10 +22,25 @@ public class HomingProjectileController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Initialize(Vector2 initialDirection, float initialSpeed, Transform targetTransform = null)
+    /// <summary>
+    /// Initialize the homing projectile with all necessary parameters
+    /// </summary>
+    public void Initialize(
+        Vector2 initialDirection,
+        float projectileSpeed,
+        float projectileDamage,
+        float projectileTurnSpeed,
+        float projectileHomingDuration,
+        float projectileMinDistance,
+        Transform targetTransform = null)
     {
+        // Set all properties
         direction = initialDirection.normalized;
-        speed = initialSpeed;
+        speed = projectileSpeed;
+        damage = projectileDamage;
+        turnSpeed = projectileTurnSpeed;
+        homingDuration = projectileHomingDuration;
+        minDistanceToHome = projectileMinDistance;
         target = targetTransform;
 
         // Set initial rotation

@@ -292,9 +292,11 @@ MonoBehaviour:
   projectilePrefab: {fileID: 1157104776517915945, guid: 3e0c9d82cf38c654a82acd276b36a8ed, type: 3}
   firePoint: {fileID: 2655318085238588290}
   projectileSpeed: 30
+  projectileDamage: 1.5
   precision: 0.9
   attackCooldown: 5
   useHomingProjectiles: 1
-  homingTurnSpeed: 120
+  homingTurnSpeed: 60
   homingDuration: 3
+  homingMinDistance: 0.5
   target: {fileID: 0}

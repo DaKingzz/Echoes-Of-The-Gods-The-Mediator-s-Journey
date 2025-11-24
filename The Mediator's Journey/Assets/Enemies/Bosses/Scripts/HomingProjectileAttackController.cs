@@ -6,7 +6,11 @@ public class HomingProjectileAttackController : MonoBehaviour
     private GameObject projectilePrefab;
 
     [SerializeField] private Transform firePoint;
-    [SerializeField] private float projectileSpeed = 30f;
+
+    [Header("Projectile Stats")] [SerializeField]
+    private float projectileSpeed = 30f;
+
+    [SerializeField] private float projectileDamage = 1.5f;
 
     [Header("Attack Settings")] [SerializeField, Range(0f, 1f)]
     private float precision = 0.9f;
@@ -18,6 +22,7 @@ public class HomingProjectileAttackController : MonoBehaviour
 
     [SerializeField] private float homingTurnSpeed = 120f;
     [SerializeField] private float homingDuration = 3f;
+    [SerializeField] private float homingMinDistance = 0.5f;
 
     private float lastAttackTime;
     public Transform target;
@@ -41,36 +46,35 @@ public class HomingProjectileAttackController : MonoBehaviour
         if (useHomingProjectiles)
         {
             HomingProjectileController homing = projectile.GetComponent<HomingProjectileController>();
-            if (homing != null)
+            if (homing == null)
             {
-                homing.Initialize(dir, projectileSpeed, target);
+                Debug.LogError("Homing projectile enabled but HomingProjectileController not found on prefab!");
+                Destroy(projectile);
+                return false;
+            }
 
-                // Override homing settings if needed
-                // You can expose these through reflection or make them public in HomingProjectileController
-            }
-            else
-            {
-                Debug.LogWarning("Homing projectile enabled but HomingProjectileController not found on prefab!");
-                // Fallback to regular projectile
-                ProjectileController regular = projectile.GetComponent<ProjectileController>();
-                if (regular != null)
-                {
-                    regular.Initialize(dir, projectileSpeed);
-                }
-            }
+            homing.Initialize(
+                dir, // Initial direction
+                projectileSpeed, // Speed
+                projectileDamage, // Damage
+                homingTurnSpeed, // Turn speed
+                homingDuration, // Homing duration
+                homingMinDistance, // Minimum distance to stop homing
+                target // Target transform
+            );
         }
         else
         {
             // Use regular projectile
             ProjectileController regular = projectile.GetComponent<ProjectileController>();
-            if (regular != null)
+            if (regular == null)
             {
-                regular.Initialize(dir, projectileSpeed);
+                Debug.LogError("ProjectileController not found on prefab!");
+                Destroy(projectile);
+                return false;
             }
-            else
-            {
-                Debug.LogWarning("ProjectileController not found on prefab!");
-            }
+
+            regular.Initialize(dir, projectileSpeed);
         }
 
         return true;
