@@ -49,6 +49,10 @@ public class InventoryManager : MonoBehaviour
 
     public void UseItem(string itemName)
     {
+        Time.timeScale = 1;
+        InventoryMenu.SetActive(false);
+        inventoryActivated = false;
+
         if (itemName == "Time Key")
             Debug.Log("Enter Time Boss Zone");
         else if (itemName == "Gravity Key")

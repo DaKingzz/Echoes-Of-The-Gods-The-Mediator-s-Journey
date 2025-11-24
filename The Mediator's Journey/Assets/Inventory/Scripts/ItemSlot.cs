@@ -48,19 +48,17 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         {
             OnLeftClick(); 
         }
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            //OnRightClick();
-        }
     }
 
     public void OnLeftClick()
     {
         if (thisItemSelected)
         {
-            inventoryManager.UseItem(itemName);
+            inventoryManager.DeselectAllSlots();
             if (isFull)
                 EmptySlot();
+            isFull = false;
+            inventoryManager.UseItem(itemName);
         }
 
         else
@@ -85,22 +83,4 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         itemDescriptionImage.sprite = emptySprite;
     }
 
-    public void OnRightClick()
-    {
-        GameObject itemToDrop = new GameObject(itemName);
-        Item newItem = itemToDrop.AddComponent<Item>();
-        newItem.itemName = itemName;
-        newItem.sprite = itemSprite;
-        newItem.itemDescription = itemDescription;
-
-        SpriteRenderer sr = itemToDrop.AddComponent<SpriteRenderer>();
-        sr.sprite = itemSprite;
-
-        itemToDrop.AddComponent<BoxCollider2D>();
-        itemToDrop.transform.position = GameObject.FindWithTag("Player").transform.position;
-
-
-        if (isFull)
-            EmptySlot();
-    }
 }
