@@ -29,7 +29,7 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 
     public void Start()
     {
-        inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+        inventoryManager = InventoryManager.Instance;
     }
 
     public void AddItem (string itemName, Sprite itemSprite, string itemDescription)
@@ -50,25 +50,57 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         }
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick();
+            //OnRightClick();
         }
     }
 
     public void OnLeftClick()
     {
-        inventoryManager.DeselectAllSlots(); 
-        selectedShader.SetActive(true);
-        thisItemSelected = true; 
+        if (thisItemSelected)
+        {
+            inventoryManager.UseItem(itemName);
+            if (isFull)
+                EmptySlot();
+        }
 
-        ItemDescNameTxt.text = itemName;
-        ItemDescTxt.text = itemDescription; 
-        itemDescriptionImage.sprite = itemSprite;
-        if (itemDescriptionImage.sprite == null)
-            itemDescriptionImage.sprite = emptySprite; 
+        else
+        {
+            inventoryManager.DeselectAllSlots();
+            selectedShader.SetActive(true);
+            thisItemSelected = true;
+
+            ItemDescNameTxt.text = itemName;
+            ItemDescTxt.text = itemDescription;
+            itemDescriptionImage.sprite = itemSprite;
+            if (itemDescriptionImage.sprite == null)
+                itemDescriptionImage.sprite = emptySprite;
+        }
+    }
+
+    private void EmptySlot()
+    {
+        itemImage.sprite = emptySprite;
+        ItemDescNameTxt.text = "";
+        ItemDescTxt.text = "";
+        itemDescriptionImage.sprite = emptySprite;
     }
 
     public void OnRightClick()
     {
+        GameObject itemToDrop = new GameObject(itemName);
+        Item newItem = itemToDrop.AddComponent<Item>();
+        newItem.itemName = itemName;
+        newItem.sprite = itemSprite;
+        newItem.itemDescription = itemDescription;
 
+        SpriteRenderer sr = itemToDrop.AddComponent<SpriteRenderer>();
+        sr.sprite = itemSprite;
+
+        itemToDrop.AddComponent<BoxCollider2D>();
+        itemToDrop.transform.position = GameObject.FindWithTag("Player").transform.position;
+
+
+        if (isFull)
+            EmptySlot();
     }
 }

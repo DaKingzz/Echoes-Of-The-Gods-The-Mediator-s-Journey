@@ -1,16 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class InventoryManager : MonoBehaviour
 {
     public GameObject InventoryMenu;
     private bool inventoryActivated;
-    public ItemSlot[] itemSlot; 
+    public ItemSlot[] itemSlot;
 
-    void Start()
+    public static InventoryManager Instance;
+    public GameObject InventoryCanvas;
+
+    private void Awake()
     {
-        
+        // Singleton pattern: ensure only one instance exists
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); 
+        }
+        else
+        {
+            Destroy(gameObject); // Destroy duplicates if another scene has one
+        }
+    }
+
+    public void Start()
+    {
+        InventoryMenu.SetActive(false);
+        inventoryActivated = false;
     }
 
     void Update()
@@ -30,9 +49,20 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
+    public void UseItem(string itemName)
+    {
+        if (itemName == "Time Key")
+            Debug.Log("Enter Time Boss Zone");
+        else if (itemName == "Gravity Key")
+            Debug.Log("Enter Gravity Boss Zone");
+        else if(itemName == "Light Key")
+            Debug.Log("Enter Light Boss Zone");
+        else if(itemName == "Evil Key")
+            Debug.Log("Enter Evil Boss Zone");
+    }
+
     public void AddItem(string itemName, Sprite itemSprite, string itemDescription)
     {
-        //Debug.Log("itemName = " + itemName + " sprite = " + itemSprite); 
         for (int i = 0; i < itemSlot.Length; i++)
         {
             if (itemSlot[i].isFull == false)
