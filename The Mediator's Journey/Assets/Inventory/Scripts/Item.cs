@@ -14,8 +14,8 @@ public class Item : MonoBehaviour
     {
         inventoryManager = InventoryManager.Instance;
 
-        // Prevent key from respawning if already used
-        if (inventoryManager.IsKeyAlreadyUsed(itemName))
+        // Prevent key from respawning if already picked up
+        if (inventoryManager.HasPickedUp(itemName))
         {
             Destroy(gameObject);
         }
@@ -25,7 +25,8 @@ public class Item : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-            inventoryManager.AddItem(itemName, sprite, itemDescription); 
+            inventoryManager.AddItem(itemName, sprite, itemDescription);
+            inventoryManager.MarkItemPickedUp(itemName);
             Destroy(gameObject);
         }
     }

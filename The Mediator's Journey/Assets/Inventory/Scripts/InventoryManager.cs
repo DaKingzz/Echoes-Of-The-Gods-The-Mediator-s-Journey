@@ -12,9 +12,9 @@ public class InventoryManager : MonoBehaviour
     public static InventoryManager Instance;
 
     private HashSet<string> usedKeys = new HashSet<string>();
+    private HashSet<string> pickedUpItems = new HashSet<string>();
+
     public string currentSelectedKey; 
-
-
 
     private void Awake()
     {
@@ -61,6 +61,16 @@ public class InventoryManager : MonoBehaviour
     {
         return usedKeys.Contains(keyName);
     }
+    public void MarkItemPickedUp(string itemName)
+    {
+        pickedUpItems.Add(itemName);
+    }
+
+    public bool HasPickedUp(string itemName)
+    {
+        return pickedUpItems.Contains(itemName);
+    }
+
 
     public void AddItem(string itemName, Sprite itemSprite, string itemDescription)
     {
