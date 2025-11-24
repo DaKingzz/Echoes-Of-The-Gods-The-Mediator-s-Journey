@@ -94,6 +94,8 @@ MonoBehaviour:
   itemSprite: {fileID: 0}
   isFull: 0
   itemImage: {fileID: 4925622154033092950}
+  selectedShader: {fileID: 2061647421914178641}
+  thisItemSelected: 0
 --- !u!1 &2061647421914178641
 GameObject:
   m_ObjectHideFlags: 0
@@ -129,7 +131,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 40, y: 40}
+  m_SizeDelta: {x: 30, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3792368957575483917
 CanvasRenderer:
@@ -152,7 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.5345911, g: 0.5345911, b: 0.5345911, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
