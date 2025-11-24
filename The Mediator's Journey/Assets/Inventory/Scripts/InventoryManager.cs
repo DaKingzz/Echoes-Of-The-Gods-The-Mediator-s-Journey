@@ -6,10 +6,15 @@ using UnityEngine.SceneManagement;
 public class InventoryManager : MonoBehaviour
 {
     public GameObject InventoryMenu;
-    private bool inventoryActivated;
+    public bool inventoryActivated;
     public ItemSlot[] itemSlot;
 
     public static InventoryManager Instance;
+
+    private HashSet<string> usedKeys = new HashSet<string>();
+    public string currentSelectedKey; 
+
+
 
     private void Awake()
     {
@@ -47,20 +52,14 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-    public void UseItem(string itemName)
+    public void MarkKeyUsed(string keyName)
     {
-        Time.timeScale = 1;
-        InventoryMenu.SetActive(false);
-        inventoryActivated = false;
+        usedKeys.Add(keyName);
+    }
 
-        if (itemName == "Time Key")
-            Debug.Log("Enter Time Boss Zone");
-        else if (itemName == "Gravity Key")
-            Debug.Log("Enter Gravity Boss Zone");
-        else if(itemName == "Light Key")
-            Debug.Log("Enter Light Boss Zone");
-        else if(itemName == "Evil Key")
-            Debug.Log("Enter Evil Boss Zone");
+    public bool IsKeyAlreadyUsed(string keyName)
+    {
+        return usedKeys.Contains(keyName);
     }
 
     public void AddItem(string itemName, Sprite itemSprite, string itemDescription)
@@ -81,6 +80,19 @@ public class InventoryManager : MonoBehaviour
         {
             itemSlot[i].selectedShader.SetActive(false);
             itemSlot[i].thisItemSelected = false;
+        }
+    }
+
+    public void RemoveItem(string keyName)
+    {
+        foreach (var slot in itemSlot)
+        {
+            if (slot.itemName == keyName)
+            {
+                slot.EmptySlot(); 
+                slot.isFull = false;
+                return;
+            }
         }
     }
 }

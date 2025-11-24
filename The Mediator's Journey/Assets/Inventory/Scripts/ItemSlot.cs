@@ -52,13 +52,31 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 
     public void OnLeftClick()
     {
+        if (!isFull) return; 
+        
         if (thisItemSelected)
-        {
+         {
             inventoryManager.DeselectAllSlots();
-            if (isFull)
-                EmptySlot();
-            isFull = false;
-            inventoryManager.UseItem(itemName);
+
+            // Attempt to use key ONLY if touching a portal
+            BossPortal[] bPortals = FindObjectsOfType<BossPortal>();
+            foreach (var portal in bPortals)
+            {
+                if (portal.IsPlayerTouching && portal.requiredKeyName == itemName)
+                {
+                    // Unlock portal
+                    portal.UnlockPortal();
+                    inventoryManager.MarkKeyUsed(itemName);
+                    inventoryManager.RemoveItem(itemName);
+                    inventoryManager.currentSelectedKey = null;
+
+                    inventoryManager.InventoryMenu.SetActive(false);
+                    inventoryManager.inventoryActivated = false;
+                    Time.timeScale = 1;
+                    portal.LoadDestinationBossScene();
+                    return; // only use on one portal
+                }
+            }
         }
 
         else
@@ -75,12 +93,17 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    private void EmptySlot()
+    public void EmptySlot()
     {
         itemImage.sprite = emptySprite;
         ItemDescNameTxt.text = "";
         ItemDescTxt.text = "";
         itemDescriptionImage.sprite = emptySprite;
+
+        isFull = false;
+        thisItemSelected = false;
     }
+
+
 
 }
