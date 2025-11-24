@@ -13,7 +13,6 @@ public class InventoryManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton pattern: ensure only one instance exists
         if (Instance == null)
         {
             Instance = this;
@@ -21,14 +20,14 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
-            Destroy(gameObject); // Destroy duplicates if another scene has one
+            Destroy(gameObject);
         }
     }
 
     public void Start()
     {
-        InventoryMenu.SetActive(false);
-        inventoryActivated = false;
+        //InventoryMenu.SetActive(false);
+        //inventoryActivated = false;
     }
 
     void Update()
