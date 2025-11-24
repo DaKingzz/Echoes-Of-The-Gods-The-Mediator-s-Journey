@@ -345,7 +345,6 @@ MonoBehaviour:
   - {fileID: 5802926391231350638}
   - {fileID: 4378471625295403453}
   - {fileID: 1022633260561564876}
-  InventoryCanvas: {fileID: 758001808511091857}
 --- !u!1 &898133988854315862
 GameObject:
   m_ObjectHideFlags: 0

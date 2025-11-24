@@ -10,7 +10,6 @@ public class InventoryManager : MonoBehaviour
     public ItemSlot[] itemSlot;
 
     public static InventoryManager Instance;
-    public GameObject InventoryCanvas;
 
     private void Awake()
     {
