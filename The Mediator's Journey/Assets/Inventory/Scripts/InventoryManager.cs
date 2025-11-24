@@ -16,14 +16,21 @@ public class InventoryManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I) && inventoryActivated)
         {
+            Time.timeScale = 1; 
             InventoryMenu.SetActive(false);
             inventoryActivated = false;
         }
 
         else if (Input.GetKeyDown(KeyCode.I) && !inventoryActivated)
         {
+            Time.timeScale = 0; 
             InventoryMenu.SetActive(true);
             inventoryActivated = true;
         }
+    }
+
+    public void AddItem(string itemName, Sprite itemSprite)
+    {
+        Debug.Log("itemName = " + itemName + " sprite = " + itemSprite); 
     }
 }
