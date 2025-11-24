@@ -5,9 +5,7 @@ using UnityEngine;
 public class Item : MonoBehaviour
 {
     [SerializeField] public string itemName;
-
     [SerializeField] public Sprite sprite;
-
     [TextArea] [SerializeField] public string itemDescription;
 
     private InventoryManager inventoryManager;
@@ -15,6 +13,12 @@ public class Item : MonoBehaviour
     void Start()
     {
         inventoryManager = InventoryManager.Instance;
+
+        // Prevent key from respawning if already used
+        if (inventoryManager.IsKeyAlreadyUsed(itemName))
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)

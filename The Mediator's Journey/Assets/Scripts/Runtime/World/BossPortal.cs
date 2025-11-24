@@ -13,20 +13,30 @@ public class BossPortal : MonoBehaviour
         // If player already used this key in a previous scene
         if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
         {
-            Debug.Log($"Portal {requiredKeyName} already unlocked previously.");
+            UnlockPortal();
+            //Debug.Log($"Portal {requiredKeyName} already unlocked previously.");
         }
     }
 
     public void UnlockPortal()
     {
         Debug.Log($"Portal unlocked using {requiredKeyName}!");
+        // Disable collider so player can just pass through
+        //GetComponent<Collider2D>().enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
 
-        IsPlayerTouching = true;
+        if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
+        {
+            LoadDestinationBossScene();
+        }
+        else
+        {
+            IsPlayerTouching = true;
+        }
         Debug.Log($"player touching {IsPlayerTouching}");
     }
 
