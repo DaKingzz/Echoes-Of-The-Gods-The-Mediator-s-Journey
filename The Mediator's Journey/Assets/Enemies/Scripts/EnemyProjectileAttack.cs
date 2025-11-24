@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnemyFireballAttack : MonoBehaviour
+public class EnemyProjectileAttack : MonoBehaviour
 {
     [Header("Fireball Settings")] [SerializeField]
     private GameObject fireballPrefab;
@@ -27,7 +27,7 @@ public class EnemyFireballAttack : MonoBehaviour
 
         // Spawn fireball
         GameObject fb = Instantiate(fireballPrefab, firePoint.position, Quaternion.identity);
-        fb.GetComponent<Fireball>().Initialize(dir, fireballSpeed);
+        fb.GetComponent<ProjectileController>().Initialize(dir, fireballSpeed);
         return true;
     }
 }
