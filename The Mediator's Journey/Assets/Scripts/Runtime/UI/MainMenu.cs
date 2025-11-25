@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using UnityEngine.Video;
 
 public class MainMenu : MonoBehaviour
@@ -9,9 +8,6 @@ public class MainMenu : MonoBehaviour
     public GameObject mainMenuPanel;
     public GameObject settingsPanel;
     public GameObject creditsPanel;
-
-    [SerializeField] private Button musicButton;
-    [SerializeField] private Button sfxButton;
 
     public void Play()
     {
@@ -33,28 +29,6 @@ public class MainMenu : MonoBehaviour
             vp.Play(); 
         }
     }
-
-    //Setting panel
-    public void ToggleMusicButton()
-    {
-        SoundManager.Instance.ToggleMusic();
-
-        Image img = musicButton.image;
-        img.color = SoundManager.Instance.musicSource.mute
-            ? new Color(0.6f, 0.6f, 0.6f)  
-            : Color.white;
-    }
-
-    public void ToggleSFXButton()
-    {
-        SoundManager.Instance.ToggleSFX();
-
-        Image img = sfxButton.image;
-        img.color = SoundManager.Instance.sfxSource.mute
-            ? new Color(0.6f, 0.6f, 0.6f)  
-            : Color.white;
-    }
-
 
     public void OpenCredits()
     {
