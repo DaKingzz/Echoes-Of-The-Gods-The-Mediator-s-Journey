@@ -14,7 +14,7 @@ public class InventoryManager : MonoBehaviour
     private HashSet<string> usedKeys = new HashSet<string>();
     private HashSet<string> pickedUpItems = new HashSet<string>();
 
-    public string currentSelectedKey;
+    public ItemSlot currentSelectedKey;
 
     [Header("Audio")]
     public AudioSource audioSource;
@@ -97,6 +97,8 @@ public class InventoryManager : MonoBehaviour
             itemSlot[i].selectedShader.SetActive(false);
             itemSlot[i].thisItemSelected = false;
         }
+
+        currentSelectedKey = null;
     }
 
     public void RemoveItem(string keyName)
@@ -110,5 +112,44 @@ public class InventoryManager : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public void UseSelectedItem()
+    {
+        if (currentSelectedKey == null || !currentSelectedKey.isFull)
+            return;
+
+        string keyName = currentSelectedKey.itemName;
+
+        // Attempt to use key ONLY if touching a portal
+        BossPortal[] bPortals = FindObjectsOfType<BossPortal>();
+        foreach (var portal in bPortals)
+        {
+            if (portal.IsPlayerTouching && portal.requiredKeyName == keyName)
+            {
+                // --- PLAY SUCCESS SOUND ---
+                if(audioSource && sfxUnlockSuccess)
+                    audioSource.PlayOneShot(sfxUnlockSuccess);
+
+                // Unlock portal, remove key
+                portal.UnlockPortal();
+                MarkKeyUsed(keyName);
+                RemoveItem(keyName);
+                currentSelectedKey = null;
+
+                // Close inventory
+                InventoryMenu.SetActive(false);
+                inventoryActivated = false;
+                Time.timeScale = 1;
+
+                // Load destination scene
+                portal.LoadDestinationBossScene();
+                return;
+            }
+        }
+
+        // --- NO PORTAL FOUND OR WRONG KEY ---
+        if (audioSource && sfxUnlockFail)
+            audioSource.PlayOneShot(sfxUnlockFail);
     }
 }

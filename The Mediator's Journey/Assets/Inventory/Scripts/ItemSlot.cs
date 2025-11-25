@@ -52,54 +52,26 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 
     public void OnLeftClick()
     {
-        if (!isFull) return; 
-        
+        if (!isFull) return;
+
         if (thisItemSelected)
         {
-            inventoryManager.DeselectAllSlots();
-
-            // Attempt to use key ONLY if touching a portal
-            BossPortal[] bPortals = FindObjectsOfType<BossPortal>();
-            foreach (var portal in bPortals)
-            {
-                if (portal.IsPlayerTouching && portal.requiredKeyName == itemName)
-                {
-                    // --- PLAY SUCCESS SOUND ---
-                    if (inventoryManager.audioSource && inventoryManager.sfxUnlockSuccess)
-                        inventoryManager.audioSource.PlayOneShot(inventoryManager.sfxUnlockSuccess);
-
-                    // Unlock portal
-                    portal.UnlockPortal();
-                    inventoryManager.MarkKeyUsed(itemName);
-                    inventoryManager.RemoveItem(itemName);
-                    inventoryManager.currentSelectedKey = null;
-
-                    inventoryManager.InventoryMenu.SetActive(false);
-                    inventoryManager.inventoryActivated = false;
-                    Time.timeScale = 1;
-                    portal.LoadDestinationBossScene();
-                    return; // only use on one portal
-                }
-            }
-
-            // --- NO PORTAL FOUND OR WRONG KEY ---
-            if (inventoryManager.audioSource && inventoryManager.sfxUnlockFail)
-                inventoryManager.audioSource.PlayOneShot(inventoryManager.sfxUnlockFail);
-
+            DeselectItem(); 
+            return;
         }
 
-        else
-        {
-            inventoryManager.DeselectAllSlots();
-            selectedShader.SetActive(true);
-            thisItemSelected = true;
+        inventoryManager.DeselectAllSlots();
+        selectedShader.SetActive(true);
+        thisItemSelected = true;
 
-            ItemDescNameTxt.text = itemName;
-            ItemDescTxt.text = itemDescription;
-            itemDescriptionImage.sprite = itemSprite;
-            if (itemDescriptionImage.sprite == null)
-                itemDescriptionImage.sprite = emptySprite;
-        }
+        inventoryManager.currentSelectedKey = this;
+
+        ItemDescNameTxt.text = itemName;
+        ItemDescTxt.text = itemDescription;
+        itemDescriptionImage.sprite = itemSprite;
+        if (itemDescriptionImage.sprite == null)
+            itemDescriptionImage.sprite = emptySprite;
+     
     }
 
     public void EmptySlot()
@@ -113,6 +85,20 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         thisItemSelected = false;
     }
 
+    private void DeselectItem()
+    {
+        selectedShader.SetActive(false);
+        thisItemSelected = false;
+
+        // Clear description UI
+        ItemDescNameTxt.text = "";
+        ItemDescTxt.text = "";
+        itemDescriptionImage.sprite = emptySprite;
+
+        // Tell inventory manager nothing is selected
+        if (inventoryManager.currentSelectedKey == this)
+            inventoryManager.currentSelectedKey = null;
+    }
 
 
 }
