@@ -352,6 +352,7 @@ MonoBehaviour:
   audioSource: {fileID: 9038363581380752796}
   sfxUnlockSuccess: {fileID: 8300000, guid: 9c31877b80c7f0144ad56c082c18aba8, type: 3}
   sfxUnlockFail: {fileID: 8300000, guid: 514d7ac1170a1d14682a1514a1ee07e2, type: 3}
+  sfxPickupItem: {fileID: 8300000, guid: 56175264f440bf045a5d23afbb7ceb5c, type: 3}
   useItemButton: {fileID: 1481895905876299848}
 --- !u!82 &9038363581380752796
 AudioSource:

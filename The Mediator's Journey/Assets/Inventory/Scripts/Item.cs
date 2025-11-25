@@ -27,6 +27,10 @@ public class Item : MonoBehaviour
         {
             inventoryManager.AddItem(itemName, sprite, itemDescription);
             inventoryManager.MarkItemPickedUp(itemName);
+
+            if (inventoryManager.audioSource && inventoryManager.sfxPickupItem)
+                inventoryManager.audioSource.PlayOneShot(inventoryManager.sfxPickupItem);
+
             Destroy(gameObject);
         }
     }

@@ -21,6 +21,7 @@ public class InventoryManager : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip sfxUnlockSuccess;
     public AudioClip sfxUnlockFail;
+    public AudioClip sfxPickupItem;
 
     [Header("UI")]
     public Button useItemButton;
