@@ -11,7 +11,6 @@ public class Dialogue : MonoBehaviour
     public string[] lines;
     public float textSpeed;
     private PlayerController playerMovement;
-    private SwordWeapon swordWeapon;
 
     private int index;
 
@@ -73,11 +72,7 @@ public class Dialogue : MonoBehaviour
             {
                 playerMovement.enabled = true;
             }
-            if (swordWeapon != null)
-            {
-                swordWeapon.enabled = true;
-            }
-
+                
         }
     }
 }
