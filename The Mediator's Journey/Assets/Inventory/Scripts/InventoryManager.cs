@@ -142,6 +142,7 @@ public class InventoryManager : MonoBehaviour
                 RemoveItem(keyName);
                 currentSelectedKey = null;
                 UpdateUseButtonState();
+                DeselectAllSlots(); 
 
                 // Close inventory
                 InventoryMenu.SetActive(false);
