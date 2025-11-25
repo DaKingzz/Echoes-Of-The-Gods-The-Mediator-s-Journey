@@ -60,4 +60,15 @@ public class SoundManager : MonoBehaviour
     {
         sfxSource.PlayOneShot(clickSound);
     }
+
+    public void ToggleMusic()
+    {
+        musicSource.mute = !musicSource.mute;
+    }
+
+    public void ToggleSFX()
+    {
+        sfxSource.mute = !sfxSource.mute;
+    }
+
 }
