@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,27 +8,71 @@ using UnityEngine.InputSystem;
 public class NPC : MonoBehaviour
 {
     public GameObject dialoguePanel;
+    public GameObject prompt;
     public bool playerIsClose;
     private PlayerController playerMovement;
     private Dialogue dialogue;
+    private SwordWeapon swordWeapon;
     // Start is called before the first frame update
     void Start()
     {
-        playerMovement = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
-
+        
+            GameObject player = GameObject.FindWithTag("Player");
+            if (player != null)
+            {
+                playerMovement = player.GetComponent<PlayerController>();
+                swordWeapon = player.GetComponent<SwordWeapon>();
+            }
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (playerMovement == null)
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+            if (player != null)
+            {
+                playerMovement = player.GetComponent<PlayerController>();
+                swordWeapon = player.GetComponent<SwordWeapon>();
+            }
+        }
+
+        if (playerIsClose)
+        {
+            if (!prompt.activeInHierarchy)
+            {
+                prompt.SetActive(true);
+            }
+
+        }
+        else
+        {
+            if (prompt.activeInHierarchy)
+            {
+                prompt.SetActive(false);
+            }
+        }
+
         if (Keyboard.current.eKey.wasPressedThisFrame && playerIsClose)
         {
             if (!dialoguePanel.activeInHierarchy)
             {
                 dialoguePanel.SetActive(true);
-                playerMovement.enabled = false;
+                if (playerMovement != null)
+                {
+                    playerMovement.enabled = false;
 
-                Dialogue dialogue = dialoguePanel.GetComponent<Dialogue>();
+                }
+                if (swordWeapon != null)
+                {
+                    swordWeapon.enabled = false;
+
+                }
+
+
+                dialogue = dialoguePanel.GetComponent<Dialogue>();
                 if (dialogue != null)
                 {
                     dialogue.startDialogue();
