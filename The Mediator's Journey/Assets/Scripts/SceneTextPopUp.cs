@@ -6,7 +6,7 @@ using TMPro;
 public class SceneTextPopUp : MonoBehaviour
 {
     public TextMeshProUGUI textElement;
-    public float displayTime = 3f;
+    public float displayTime = 5f;
 
     // Start is called before the first frame update
     void Start()

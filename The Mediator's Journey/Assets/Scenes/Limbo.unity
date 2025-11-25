@@ -306,10 +306,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Limbo
       objectReference: {fileID: 0}
-    - target: {fileID: 9111083372852646478, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

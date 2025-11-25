@@ -648,10 +648,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 614413653359986402, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 678634080651991707, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
       propertyPath: m_Name
       value: IcarusRoad
