@@ -65,6 +65,7 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
         thisItemSelected = true;
 
         inventoryManager.currentSelectedKey = this;
+        inventoryManager.UpdateUseButtonState();
 
         ItemDescNameTxt.text = itemName;
         ItemDescTxt.text = itemDescription;
@@ -97,7 +98,10 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 
         // Tell inventory manager nothing is selected
         if (inventoryManager.currentSelectedKey == this)
+        {
             inventoryManager.currentSelectedKey = null;
+            inventoryManager.UpdateUseButtonState();
+        }
     }
 
 

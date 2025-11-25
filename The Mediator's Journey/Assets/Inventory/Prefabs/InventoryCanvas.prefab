@@ -351,6 +351,7 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   sfxUnlockSuccess: {fileID: 0}
   sfxUnlockFail: {fileID: 0}
+  useItemButton: {fileID: 1481895905876299848}
 --- !u!1 &898133988854315862
 GameObject:
   m_ObjectHideFlags: 0

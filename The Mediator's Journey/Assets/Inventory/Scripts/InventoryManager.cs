@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -19,8 +20,10 @@ public class InventoryManager : MonoBehaviour
     [Header("Audio")]
     public AudioSource audioSource;
     public AudioClip sfxUnlockSuccess;
-    public AudioClip sfxUnlockFail; 
+    public AudioClip sfxUnlockFail;
 
+    [Header("UI")]
+    public Button useItemButton;
 
     private void Awake()
     {
@@ -39,6 +42,7 @@ public class InventoryManager : MonoBehaviour
     {
         //InventoryMenu.SetActive(false);
         //inventoryActivated = false;
+        UpdateUseButtonState();
     }
 
     void Update()
@@ -99,6 +103,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         currentSelectedKey = null;
+        UpdateUseButtonState();
     }
 
     public void RemoveItem(string keyName)
@@ -136,6 +141,7 @@ public class InventoryManager : MonoBehaviour
                 MarkKeyUsed(keyName);
                 RemoveItem(keyName);
                 currentSelectedKey = null;
+                UpdateUseButtonState();
 
                 // Close inventory
                 InventoryMenu.SetActive(false);
@@ -152,4 +158,12 @@ public class InventoryManager : MonoBehaviour
         if (audioSource && sfxUnlockFail)
             audioSource.PlayOneShot(sfxUnlockFail);
     }
+    public void UpdateUseButtonState()
+    {
+        if (currentSelectedKey != null && currentSelectedKey.isFull)
+            useItemButton.interactable = true;  // button enabled
+        else
+            useItemButton.interactable = false; // button dimmed/faded
+    }
+
 }
