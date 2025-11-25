@@ -14,6 +14,7 @@ public class Dialogue : MonoBehaviour
     private PlayerController playerMovement;
     private SwordWeapon swordWeapon;
     public NPC npc;
+    public static bool InDialogue;
 
     private int index;
 
@@ -78,8 +79,9 @@ public class Dialogue : MonoBehaviour
             gameObject.SetActive(false);
             if (npc != null)
             {
-                npc.StopDialogueAudio();
+                npc.StopDialogueAudio(); 
             }  
+            NPC.InDialogue = false;
             if (playerMovement != null)
             {
                 playerMovement.enabled = true;

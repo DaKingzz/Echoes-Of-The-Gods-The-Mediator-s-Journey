@@ -9,6 +9,10 @@ public class PlayerController : MonoBehaviour, IPlayer
     // Get Respawn Point Later
     public Transform playerRespawn;
 
+    //for dialogue
+    public NPC npc;
+    public static bool InDialogue;
+
     #region Health
 
     [Header("Health Settings")]
@@ -501,6 +505,9 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public void OnAttack(InputAction.CallbackContext context)
     {
+        //stop sweeping in when in dialogue
+        if (NPC.InDialogue) return;
+
         if (!context.performed || animator == null) return;
 
         if (Time.time - lastAttackTime < attackCooldown) return;
@@ -652,5 +659,27 @@ public class PlayerController : MonoBehaviour, IPlayer
     }
 #endif
 
+    #endregion
+
+    #region Freeze PLayer (for dialogue purposes)
+    public void FreezePlayer()
+    {
+        movementInput = Vector2.zero;
+        runInputHeld = false;
+        jumpInputHeld = false;
+        jumpPressedThisFrame = false;
+
+        rigidBody2D.velocity = Vector2.zero;
+
+        // Reset animations
+        animator.SetBool(animatorHashIsWalking, false);
+        animator.SetBool(animatorHashIsJumping, false);
+        animator.SetBool(animatorHashIsJumpingForward, false);
+        animator.SetBool(animatorHashIsJumpingRight, false);
+
+        // Stop footstep audio
+        if (footstepsSource != null && footstepsSource.isPlaying)
+            footstepsSource.Stop();
+    }
     #endregion
 }

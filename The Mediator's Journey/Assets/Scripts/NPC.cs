@@ -14,7 +14,7 @@ public class NPC : MonoBehaviour
     private Dialogue dialogue;
     private SwordWeapon swordWeapon;
     private AudioSource audio;
-    public bool isInDialogue;
+    public static bool InDialogue = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -66,9 +66,10 @@ public class NPC : MonoBehaviour
             {
                 dialoguePanel.SetActive(true);
                 audio.Play();
-                isInDialogue = true;
+                NPC.InDialogue = true;
                 if (playerMovement != null)
                 {
+                    playerMovement.FreezePlayer();
                     playerMovement.enabled = false;
 
                 }
@@ -77,7 +78,7 @@ public class NPC : MonoBehaviour
                     swordWeapon.enabled = false;
 
                 }
-                isInDialogue = false;
+               
 
 
                 dialogue = dialoguePanel.GetComponent<Dialogue>();
