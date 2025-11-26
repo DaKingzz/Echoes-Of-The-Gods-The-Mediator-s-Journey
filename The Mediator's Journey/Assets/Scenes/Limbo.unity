@@ -1336,6 +1336,14 @@ PrefabInstance:
       propertyPath: m_Points.m_Paths.Array.data[0].Array.data[3].y
       value: -0.5274911
       objectReference: {fileID: 0}
+    - target: {fileID: 4503338305239702486, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 37.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 4503338305239702486, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 35.4
+      objectReference: {fileID: 0}
     - target: {fileID: 4613876560018880085, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -1444,6 +1452,14 @@ PrefabInstance:
       propertyPath: m_Follow
       value: 
       objectReference: {fileID: 756265426}
+    - target: {fileID: 7781643357539693477, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 39.47
+      objectReference: {fileID: 0}
+    - target: {fileID: 7781643357539693477, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 12.14
+      objectReference: {fileID: 0}
     - target: {fileID: 8240970855167914060, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 42.03
@@ -1461,6 +1477,9 @@ PrefabInstance:
     - {fileID: 6223121712808793568, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
     - {fileID: 8338155951153395667, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
     - {fileID: 3460681990702605814, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+    - {fileID: 5434064223038764860, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+    - {fileID: 1649839523880995980, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+    - {fileID: 7290274143571841467, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1357139057136861122, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       insertIndex: -1
