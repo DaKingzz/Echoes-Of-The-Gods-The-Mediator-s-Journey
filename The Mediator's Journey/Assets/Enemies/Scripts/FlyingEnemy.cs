@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /// <summary>
 /// FlyingEnemy
@@ -10,10 +11,11 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class FlyingEnemy : PatrolEnemy
 {
+    [FormerlySerializedAs("fireballAttack")]
     [Header("Flying Enemy")]
     [Tooltip("Optional attack component used by this flying enemy (e.g., fireball shooter).")]
     [SerializeField]
-    private EnemyFireballAttack fireballAttack;
+    private EnemyProjectileAttack projectileAttack;
 
     [Tooltip(
         "Optional multiplier to further increase speed while chasing (additional to chaseSpeedMultiplier in base).")]
@@ -44,8 +46,8 @@ public class FlyingEnemy : PatrolEnemy
             rb2d.constraints |= RigidbodyConstraints2D.FreezeRotation;
         }
 
-        if (fireballAttack == null)
-            fireballAttack = GetComponent<EnemyFireballAttack>();
+        if (projectileAttack == null)
+            projectileAttack = GetComponent<EnemyProjectileAttack>();
 
         // Flying enemies allow ascending in avoidance
         allowAscendWhenBlocked = true;
@@ -73,7 +75,7 @@ public class FlyingEnemy : PatrolEnemy
                 chase = chase.normalized * (chase.magnitude * extraChaseSpeedMultiplier);
 
             // Attempt attack (children trigger animator event)
-            if (fireballAttack != null && fireballAttack.TryAttack())
+            if (projectileAttack != null && projectileAttack.TryAttack())
             {
                 if (animator != null) animator.SetTrigger(animatorHashIsAttacking);
             }
