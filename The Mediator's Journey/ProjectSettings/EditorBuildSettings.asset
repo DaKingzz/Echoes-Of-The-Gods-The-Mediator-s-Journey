@@ -26,5 +26,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Limbo.unity
     guid: d378db703ffc2184c818000be71205fb
+  - enabled: 1
+    path: Assets/Scenes/GravityBoss.unity
+    guid: d6dc76a020177a0468ece920820dceb4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: cf3ebd8e978d5b64fb849339210b9adf, type: 3}
