@@ -4961,6 +4961,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 12.02
       objectReference: {fileID: 0}
+    - target: {fileID: 4643976466898621796, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: destinationScene
+      value: TimeBoss
+      objectReference: {fileID: 0}
+    - target: {fileID: 4643976466898621796, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: destinationSpawnName
+      value: FromDown
+      objectReference: {fileID: 0}
     - target: {fileID: 5027357332979422591, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_LocalScale.y
       value: 8.235588
@@ -5047,7 +5055,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8240970855167914060, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 16.44
+      value: 16.53
       objectReference: {fileID: 0}
     - target: {fileID: 8556116380840945954, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -5057,7 +5065,8 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: TogglePause
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7612611866154252621, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
     m_RemovedGameObjects:
     - {fileID: 3460681990702605814, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
     - {fileID: 8338155951153395667, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
@@ -6388,7 +6397,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 870461504366590887, guid: f8a2afcf26d948b40b84330b22f628a9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 18.06
+      value: 17.01
       objectReference: {fileID: 0}
     - target: {fileID: 870461504366590887, guid: f8a2afcf26d948b40b84330b22f628a9, type: 3}
       propertyPath: m_LocalPosition.z
