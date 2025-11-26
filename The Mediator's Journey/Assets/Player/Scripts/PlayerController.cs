@@ -488,7 +488,10 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (_isDead) return;
+        if (_isDead)
+        {
+            return;
+        }
         
         movementInput = context.ReadValue<Vector2>();
 
@@ -656,6 +659,7 @@ public class PlayerController : MonoBehaviour, IPlayer
     
         rigidBody2D.velocity = Vector2.zero;
         _spriteRenderer.enabled = false;
+        movementInput = Vector2.zero;
     
         // Gradually drain health to 0
         float startHealth = currentHealth;
@@ -679,8 +683,9 @@ public class PlayerController : MonoBehaviour, IPlayer
         {
             transform.position = playerRespawn.position;
             rigidBody2D.velocity = Vector2.zero; // Stop any momentum
+            movementInput = Vector2.zero;
         }
-
+        
         _spriteRenderer.enabled = true;
     
         // Gradually refill health
