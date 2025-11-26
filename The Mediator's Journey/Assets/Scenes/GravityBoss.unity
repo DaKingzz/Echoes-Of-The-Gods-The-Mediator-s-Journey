@@ -413,6 +413,10 @@ PrefabInstance:
       propertyPath: waypoints.Array.data[6]
       value: 
       objectReference: {fileID: 164458894}
+    - target: {fileID: 7307950238032452545, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7460531536271534914, guid: 3383ccfe3a2138242aee8241e239bd59, type: 3}
       propertyPath: target
       value: 

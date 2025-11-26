@@ -28,6 +28,10 @@ public class HomingProjectileAttackController : MonoBehaviour
     [SerializeField] private float homingDuration = 3f;
     [SerializeField] private float homingMinDistance = 0.5f;
     
+    [SerializeField] private AudioSource shootAudio;
+    [SerializeField] private AudioSource homingAudio;
+    [SerializeField] private AudioSource impactAudio;
+    
     private Animator _animator;
 
     private float lastAttackTime;
@@ -74,7 +78,10 @@ public class HomingProjectileAttackController : MonoBehaviour
                 homingTurnSpeed, // Turn speed
                 homingDuration, // Homing duration
                 homingMinDistance, // Minimum distance to stop homing
-                target // Target transform
+                target, // Target transform
+                shootAudio,
+                homingAudio,
+                impactAudio
             );
         }
         else
