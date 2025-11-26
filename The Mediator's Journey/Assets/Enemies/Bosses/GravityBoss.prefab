@@ -226,7 +226,7 @@ MonoBehaviour:
   player: {fileID: 0}
   loop: 1
   maxHealth: 30
-  attackComponent: {fileID: 0}
+  attackComponent: {fileID: 7460531536271534914}
   attackAtWaypoints: 1
   attackWhileMoving: 1
   movementAttackInterval: 2
