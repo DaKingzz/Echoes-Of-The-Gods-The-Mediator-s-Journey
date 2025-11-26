@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,6 +9,8 @@ public class PlayerController : MonoBehaviour, IPlayer
 {
     // Get Respawn Point Later
     public Transform playerRespawn;
+    
+    private SpriteRenderer _spriteRenderer;
 
     #region Health
 
@@ -25,10 +28,20 @@ public class PlayerController : MonoBehaviour, IPlayer
         get => currentHealth;
         private set => currentHealth = Mathf.Max(0f, value);
     }
+    
+    [Header("Death Settings")]
+    [Tooltip("Audio clip to play when player dies")]
+    [SerializeField] private AudioSource deathSoundSource;
 
-    public event Action<float> OnTookDamage;
-    public event Action OnDeath;
+    [Tooltip("Time it takes for health to drain to 0")]
+    [SerializeField] private float healthDrainDuration = 0.5f;
 
+    [Tooltip("Time it takes for health to refill after respawn")]
+    [SerializeField] private float healthRefillDuration = 1f;
+
+    [Tooltip("Delay before respawning after death")]
+    [SerializeField] private float respawnDelay = 1f;
+    private bool _isDead = false;
     #endregion
 
     #region Movement Configuration
@@ -195,6 +208,7 @@ public class PlayerController : MonoBehaviour, IPlayer
         rigidBody2D = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<Collider2D>();
         animator = GetComponent<Animator>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
 
         if (playerRespawn != null)
         {
@@ -474,6 +488,8 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public void OnMove(InputAction.CallbackContext context)
     {
+        if (_isDead) return;
+        
         movementInput = context.ReadValue<Vector2>();
 
         if (movementInput.x > 0f && !isFacingRight) FlipFacingDirection();
@@ -482,6 +498,12 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (_isDead)
+        {
+            // Set inputs to zero
+            jumpPressedThisFrame = false;
+            return;
+        }
         if (context.performed)
         {
             jumpPressedThisFrame = true;
@@ -495,12 +517,15 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     public void OnRun(InputAction.CallbackContext context)
     {
+        if (_isDead) return;
         if (context.performed) runInputHeld = true;
         else if (context.canceled) runInputHeld = false;
     }
 
     public void OnAttack(InputAction.CallbackContext context)
     {
+        if (_isDead) return;
+        
         if (!context.performed || animator == null) return;
 
         if (Time.time - lastAttackTime < attackCooldown) return;
@@ -609,8 +634,6 @@ public class PlayerController : MonoBehaviour, IPlayer
 
         CurrentHealth = Mathf.Clamp(CurrentHealth - damage, 0f, maximumHealth);
 
-        OnTookDamage?.Invoke(damage);
-
         if (currentHealth <= 0f)
             KillPlayer();
     }
@@ -620,11 +643,60 @@ public class PlayerController : MonoBehaviour, IPlayer
     /// </summary>
     public void KillPlayer()
     {
-        currentHealth = 0;
-        transform.position = playerRespawn.position;
-        OnDeath?.Invoke();
+        if (_isDead) return;
+    
+        StartCoroutine(DeathSequence());
     }
+    
+    private IEnumerator DeathSequence()
+    {
+        _isDead = true;
+        
+        deathSoundSource.Play();
+    
+        rigidBody2D.velocity = Vector2.zero;
+        _spriteRenderer.enabled = false;
+    
+        // Gradually drain health to 0
+        float startHealth = currentHealth;
+        float elapsedTime = 0f;
+    
+        while (elapsedTime < healthDrainDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / healthDrainDuration;
+            currentHealth = Mathf.Lerp(startHealth, 0f, t);
+            yield return null;
+        }
+    
+        currentHealth = 0f;
+    
+        // Wait before respawning
+        yield return new WaitForSeconds(respawnDelay);
+    
+        // Respawn player
+        if (playerRespawn != null)
+        {
+            transform.position = playerRespawn.position;
+            rigidBody2D.velocity = Vector2.zero; // Stop any momentum
+        }
 
+        _spriteRenderer.enabled = true;
+    
+        // Gradually refill health
+        elapsedTime = 0f;
+    
+        while (elapsedTime < healthRefillDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / healthRefillDuration;
+            currentHealth = Mathf.Lerp(0f, maximumHealth, t);
+            yield return null;
+        }
+    
+        currentHealth = maximumHealth;
+        _isDead = false;
+    }
     #endregion
 
     #region Editor Debugging
