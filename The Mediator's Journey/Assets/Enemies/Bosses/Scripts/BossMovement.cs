@@ -82,10 +82,6 @@ public class BossMovement : MonoBehaviour, IEnemy
         isHitHash = Animator.StringToHash("isHit");
 
         // Get attack component if not assigned
-        if (attackComponent == null)
-        {
-            attackComponent = GetComponent<HomingProjectileAttackController>();
-        }
 
         if (rb != null)
         {
