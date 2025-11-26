@@ -279,10 +279,9 @@ MonoBehaviour:
   playerRespawn: {fileID: 0}
   maximumHealth: 10
   deathSoundSource: {fileID: 400965197532044204}
-  deathAudioSource: {fileID: 0}
   healthDrainDuration: 0.5
   healthRefillDuration: 1
-  respawnDelay: 1
+  respawnDelay: 0.25
   movementSpeed: 5
   runSpeedMultiplier: 2
   initialJumpVelocity: 11
