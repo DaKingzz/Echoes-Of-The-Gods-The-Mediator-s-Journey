@@ -76,6 +76,11 @@ public class MainMenu : MonoBehaviour
     public void Quit()
     {
         SoundManager.Instance.PlayClick();
-        GameManager.Instance.Quit();
+
+        #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
     }
 }
