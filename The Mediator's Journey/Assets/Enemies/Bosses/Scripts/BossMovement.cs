@@ -62,7 +62,7 @@ public class BossMovement : MonoBehaviour, IEnemy
     Rigidbody2D rb;
     Animator animator;
     int index = 0;
-    System.Random rng;
+    System.Random rng = new System.Random();
     private float currentHealth;
 
     // Animation parameter IDs (cached for performance)
@@ -75,7 +75,6 @@ public class BossMovement : MonoBehaviour, IEnemy
 
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        rng = new System.Random();
 
         // Cache animation parameter IDs
         isDeadHash = Animator.StringToHash("isDead");
