@@ -150,6 +150,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: IkarusLevel
       objectReference: {fileID: 0}
+    - target: {fileID: 3439046734782034969, guid: 1b35b57adce8389459abd9c707cae791, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.1456507
+      objectReference: {fileID: 0}
+    - target: {fileID: 3439046734782034969, guid: 1b35b57adce8389459abd9c707cae791, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 17.4553
+      objectReference: {fileID: 0}
     - target: {fileID: 3655611729282824783, guid: 1b35b57adce8389459abd9c707cae791, type: 3}
       propertyPath: m_LocalPosition.x
       value: 22.51
