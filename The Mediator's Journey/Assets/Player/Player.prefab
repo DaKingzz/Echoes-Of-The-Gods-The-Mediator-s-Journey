@@ -280,7 +280,7 @@ MonoBehaviour:
   maximumHealth: 10
   deathSoundSource: {fileID: 400965197532044204}
   healthDrainDuration: 0.5
-  healthRefillDuration: 0.5
+  healthRefillDuration: 0.25
   respawnDelay: 0.25
   movementSpeed: 5
   runSpeedMultiplier: 2
