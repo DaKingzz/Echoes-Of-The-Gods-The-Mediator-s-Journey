@@ -1025,8 +1025,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f80f15e16d58dc247bacc00985276e41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requiredKeyName: 
-  destinationBossScene: 
+  requiredKeyName: Lamp
+  destinationBossScene: LightBoss
 --- !u!4 &5966605105862864603 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2329901790959573230, guid: ff62eb343742cc84587e0bf99849f57d, type: 3}
