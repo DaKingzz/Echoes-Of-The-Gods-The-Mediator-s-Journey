@@ -580,11 +580,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4337611100334240858, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 26.08
+      value: 27.04
       objectReference: {fileID: 0}
     - target: {fileID: 4337611100334240858, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.37
+      value: 4.08
       objectReference: {fileID: 0}
     - target: {fileID: 4337611100334240858, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: m_LocalPosition.z
@@ -686,6 +686,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2020277811862086105, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 30.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 2020277811862086105, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.53
+      objectReference: {fileID: 0}
     - target: {fileID: 2768534509996966914, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
       propertyPath: m_Follow
       value: 
@@ -697,6 +705,14 @@ PrefabInstance:
     - target: {fileID: 5528414170951713059, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
       propertyPath: m_Name
       value: BossRoomRoot
+      objectReference: {fileID: 0}
+    - target: {fileID: 6159624492020136038, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 26.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 6159624492020136038, guid: 8cdbb7ad1da455746ba0a66a52b084ac, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.97
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
