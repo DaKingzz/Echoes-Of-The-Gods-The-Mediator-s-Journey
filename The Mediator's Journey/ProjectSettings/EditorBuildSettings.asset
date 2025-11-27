@@ -32,5 +32,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TimeBoss.unity
     guid: f27289b101b23b841bd58d2e75c8484b
+  - enabled: 1
+    path: Assets/Scenes/LightBoss.unity
+    guid: e903a9ec58705d64bb296cdc9e23ca17
+  - enabled: 1
+    path: Assets/Scenes/FinalBoss.unity
+    guid: b0a6a2236b1e87f44a107490c24e8207
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: cf3ebd8e978d5b64fb849339210b9adf, type: 3}
