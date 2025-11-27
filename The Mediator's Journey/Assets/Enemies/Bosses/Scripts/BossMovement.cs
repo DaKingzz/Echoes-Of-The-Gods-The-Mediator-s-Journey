@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +17,12 @@ public class BossMovement : MonoBehaviour, IEnemy
     {
         Loop,
         RandomWalk
+    }
+
+    private enum MovementState
+    {
+        MovingToWaypoint,
+        PausedAtWaypoint
     }
 
     [Header("Core")] public MovementMode mode = MovementMode.Loop;
@@ -59,11 +64,14 @@ public class BossMovement : MonoBehaviour, IEnemy
     private float lastMovementAttackTime;
 
     // Runtime
-    Rigidbody2D rb;
-    Animator animator;
-    int index = 0;
-    System.Random rng = new System.Random();
+    private Rigidbody2D rb;
+    private Animator animator;
+    private int currentWaypointIndex = 0;
+    private System.Random rng;
     private float currentHealth;
+    private MovementState currentState = MovementState.MovingToWaypoint;
+    private float pauseTimer = 0f;
+    private bool isDead = false;
 
     // Animation parameter IDs (cached for performance)
     private int isDeadHash;
@@ -75,12 +83,11 @@ public class BossMovement : MonoBehaviour, IEnemy
 
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        rng = new System.Random();
 
         // Cache animation parameter IDs
         isDeadHash = Animator.StringToHash("isDead");
         isHitHash = Animator.StringToHash("isHit");
-
-        // Get attack component if not assigned
 
         if (rb != null)
         {
@@ -89,80 +96,53 @@ public class BossMovement : MonoBehaviour, IEnemy
             rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         }
+
+        // Initialize state
+        currentState = MovementState.MovingToWaypoint;
+        currentWaypointIndex = 0;
     }
 
-    void OnEnable()
+    void FixedUpdate()
     {
-        index = 0;
-        StopAllCoroutines();
-        StartCoroutine(BehaviorLoop());
-    }
+        if (isDead) return;
+        if (waypoints == null || waypoints.Count == 0) return;
 
-    void OnDisable()
-    {
-        StopAllCoroutines();
-    }
-
-    IEnumerator BehaviorLoop()
-    {
-        while (true)
+        switch (currentState)
         {
-            if ((waypoints == null || waypoints.Count == 0))
-            {
-                // Idle: stay near current visual position
-                yield return null;
-            }
-            else
-            {
-                switch (mode)
-                {
-                    case MovementMode.Loop:
-                        yield return StartCoroutine(LoopRoutine());
-                        break;
-                    case MovementMode.RandomWalk:
-                        yield return StartCoroutine(RandomWalkRoutine());
-                        break;
-                }
-            }
-
-            yield return null;
+            case MovementState.MovingToWaypoint:
+                UpdateMovingToWaypoint();
+                break;
+            case MovementState.PausedAtWaypoint:
+                UpdatePausedAtWaypoint();
+                break;
         }
     }
 
-    public bool TakeDamage(float amount)
+    private void UpdateMovingToWaypoint()
     {
-        currentHealth -= amount;
-
-        // Trigger hit animation
-        if (animator != null)
+        if (currentWaypointIndex < 0 || currentWaypointIndex >= waypoints.Count)
         {
-            animator.SetTrigger(isHitHash);
+            currentWaypointIndex = 0;
+            return;
         }
 
-        if (currentHealth <= 0f)
+        Transform targetWaypoint = waypoints[currentWaypointIndex];
+        if (targetWaypoint == null)
         {
-            currentHealth = 0f;
-
-            // Set death animation
-            if (animator != null)
-            {
-                animator.SetBool(isDeadHash, true);
-            }
-
-            // Boss defeated
-            StopAllCoroutines();
-            gameObject.SetActive(false);
-            return true;
+            AdvanceToNextWaypoint();
+            return;
         }
 
-        return false;
-    }
+        Vector2 target = targetWaypoint.position;
+        Vector2 currentPos = rb != null ? rb.position : (Vector2)transform.position;
+        float distance = Vector2.Distance(currentPos, target);
 
-    IEnumerator LoopRoutine()
-    {
-        while (mode == MovementMode.Loop)
+        // Check if reached waypoint
+        if (distance <= arrivalThreshold)
         {
-            yield return MoveToWaypoint(index);
+            // Snap to exact position
+            if (rb != null) rb.position = target;
+            else transform.position = (Vector3)target;
 
             // Attack at waypoint if enabled
             if (attackAtWaypoints && attackComponent != null)
@@ -170,69 +150,66 @@ public class BossMovement : MonoBehaviour, IEnemy
                 attackComponent.TryAttack();
             }
 
-            // Advance index and wrap
-            index = (index + 1) % Mathf.Max(1, waypoints.Count);
-            yield return new WaitForSeconds(pauseAtWaypoint);
+            // Transition to pause state
+            currentState = MovementState.PausedAtWaypoint;
+            pauseTimer = pauseAtWaypoint;
+            return;
         }
-    }
 
-    IEnumerator RandomWalkRoutine()
-    {
-        while (mode == MovementMode.RandomWalk)
+        // Move toward waypoint
+        Vector2 nextPosition = Vector2.MoveTowards(currentPos, target, speed * Time.fixedDeltaTime);
+        if (rb != null) rb.MovePosition(nextPosition);
+        else transform.position = (Vector3)nextPosition;
+
+        // Try to attack while moving if enabled
+        if (attackWhileMoving && attackComponent != null &&
+            Time.time - lastMovementAttackTime >= movementAttackInterval)
         {
-            if (waypoints.Count == 0) yield return null;
-            int next = rng.Next(0, waypoints.Count);
-            if (player != null && rng.NextDouble() < randomBiasTowardsPlayer)
-                next = ClosestWaypointIndexTo(player.position);
-            index = next;
-            yield return MoveToWaypoint(index);
-
-            // Attack at waypoint if enabled
-            if (attackAtWaypoints && attackComponent != null)
+            if (attackComponent.TryAttack())
             {
-                attackComponent.TryAttack();
+                lastMovementAttackTime = Time.time;
             }
-
-            yield return new WaitForSeconds(pauseAtWaypoint * (0.5f + (float)rng.NextDouble()));
         }
     }
 
-    // Move root so that the visual (visualRoot or root) reaches the waypoint at index
-    IEnumerator MoveToWaypoint(int waypointIndex)
+    private void UpdatePausedAtWaypoint()
     {
-        if (waypoints == null || waypointIndex < 0 || waypointIndex >= waypoints.Count)
-            yield break;
-        if (waypoints[waypointIndex] == null)
-            yield break;
+        pauseTimer -= Time.fixedDeltaTime;
 
-        Vector2 target = waypoints[waypointIndex].position;
-        while (true)
+        if (pauseTimer <= 0f)
         {
-            Vector2 currentPos = rb != null ? rb.position : (Vector2)transform.position;
-            float dist = Vector2.Distance(currentPos, target);
-            if (dist <= arrivalThreshold) break;
-            Vector2 next = Vector2.MoveTowards(currentPos, target, speed * Time.deltaTime);
-            if (rb != null) rb.MovePosition(next);
-            else transform.position = (Vector3)next;
+            // Advance to next waypoint
+            AdvanceToNextWaypoint();
+            currentState = MovementState.MovingToWaypoint;
+        }
+    }
 
-            // Try to attack while moving if enabled
-            if (attackWhileMoving && attackComponent != null &&
-                Time.time - lastMovementAttackTime >= movementAttackInterval)
-            {
-                if (attackComponent.TryAttack())
+    private void AdvanceToNextWaypoint()
+    {
+        switch (mode)
+        {
+            case MovementMode.Loop:
+                currentWaypointIndex = (currentWaypointIndex + 1) % Mathf.Max(1, waypoints.Count);
+                break;
+
+            case MovementMode.RandomWalk:
+                if (waypoints.Count == 0)
                 {
-                    lastMovementAttackTime = Time.time;
+                    currentWaypointIndex = 0;
+                    return;
                 }
-            }
 
-            yield return null;
+                int nextIndex = rng.Next(0, waypoints.Count);
+
+                // Bias toward player if configured
+                if (player != null && rng.NextDouble() < randomBiasTowardsPlayer)
+                {
+                    nextIndex = ClosestWaypointIndexTo(player.position);
+                }
+
+                currentWaypointIndex = nextIndex;
+                break;
         }
-
-        // snap exactly
-        if (rb != null) rb.position = target;
-        else transform.position = (Vector3)target;
-
-        yield break;
     }
 
     int ClosestWaypointIndexTo(Vector2 worldPos)
@@ -252,6 +229,45 @@ public class BossMovement : MonoBehaviour, IEnemy
         }
 
         return best;
+    }
+
+    public bool TakeDamage(float amount)
+    {
+        if (isDead) return true;
+
+        currentHealth -= amount;
+
+        // Trigger hit animation
+        if (animator != null)
+        {
+            animator.SetTrigger(isHitHash);
+        }
+
+        if (currentHealth <= 0f)
+        {
+            currentHealth = 0f;
+
+            // Set death animation
+            if (animator != null)
+            {
+                animator.SetBool(isDeadHash, true);
+            }
+
+            // Boss defeated
+            isDead = true;
+            rb.velocity = Vector2.zero;
+
+            // Disable after a delay to allow death animation
+            Invoke(nameof(DisableBoss), 2f);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void DisableBoss()
+    {
+        gameObject.SetActive(false);
     }
 
 #if UNITY_EDITOR
@@ -292,7 +308,7 @@ public class BossMovement : MonoBehaviour, IEnemy
             Vector3 waypointPos = waypoints[i].position;
 
             // Determine if this is the current target
-            bool isCurrent = Application.isPlaying && highlightCurrentTarget && i == index;
+            bool isCurrent = Application.isPlaying && highlightCurrentTarget && i == currentWaypointIndex;
 
             // Set color based on state
             if (isCurrent)
@@ -371,11 +387,12 @@ public class BossMovement : MonoBehaviour, IEnemy
         }
 
         // Draw line from boss to current target when playing
-        if (Application.isPlaying && highlightCurrentTarget && index < waypoints.Count && waypoints[index] != null)
+        if (Application.isPlaying && highlightCurrentTarget && currentWaypointIndex < waypoints.Count &&
+            waypoints[currentWaypointIndex] != null)
         {
             Vector3 bossPos = rb != null ? (Vector3)rb.position : transform.position;
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(bossPos, waypoints[index].position);
+            Gizmos.DrawLine(bossPos, waypoints[currentWaypointIndex].position);
         }
     }
 
