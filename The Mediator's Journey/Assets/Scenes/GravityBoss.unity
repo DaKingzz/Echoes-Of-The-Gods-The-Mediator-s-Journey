@@ -731,6 +731,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6216871092212324184, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 14.62
+      objectReference: {fileID: 0}
+    - target: {fileID: 6216871092212324184, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.8
+      objectReference: {fileID: 0}
     - target: {fileID: 9173306734837326367, guid: 7d21094687714fc4aaaa4513b2298816, type: 3}
       propertyPath: playerRespawn
       value: 
