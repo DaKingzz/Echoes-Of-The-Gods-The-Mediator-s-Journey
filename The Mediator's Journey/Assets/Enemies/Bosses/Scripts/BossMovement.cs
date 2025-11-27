@@ -69,7 +69,7 @@ public class BossMovement : MonoBehaviour, IEnemy
     private int isDeadHash;
     private int isHitHash;
 
-    void Awake()
+    void Start()
     {
         currentHealth = maxHealth;
 
