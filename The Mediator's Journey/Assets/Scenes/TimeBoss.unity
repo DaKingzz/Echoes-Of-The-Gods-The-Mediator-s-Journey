@@ -904,6 +904,10 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 740868419}
+    - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: maxHealth
       value: 20
       objectReference: {fileID: 0}

@@ -242,11 +242,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2062716167743285920, guid: d6545ebdaede2de49b2ec0af2b5f1739, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8.134882
+      value: 28.4
       objectReference: {fileID: 0}
     - target: {fileID: 2062716167743285920, guid: d6545ebdaede2de49b2ec0af2b5f1739, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 11.37
+      value: 21.24
       objectReference: {fileID: 0}
     - target: {fileID: 2062716167743285920, guid: d6545ebdaede2de49b2ec0af2b5f1739, type: 3}
       propertyPath: m_LocalPosition.z
@@ -580,7 +580,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Boss Key
   sprite: {fileID: 21300000, guid: 84dec574d79612d43959c097d2371c57, type: 3}
-  itemDescription: Boss
+  itemDescription: Key - This key will give you access to Pestilence's realm. Pestilence
+    is to blame for all the ruin of the world. He is the reason the Gods lost their
+    prized possesions.
 --- !u!50 &719033629
 Rigidbody2D:
   serializedVersion: 4
@@ -1018,6 +1020,10 @@ PrefabInstance:
     - target: {fileID: 678634080651991707, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
       propertyPath: m_Name
       value: IcarusRoad
+      objectReference: {fileID: 0}
+    - target: {fileID: 832178664107719970, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
+      propertyPath: m_text
+      value: Ikarus Road
       objectReference: {fileID: 0}
     - target: {fileID: 7142414490813182369, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
       propertyPath: displayTime
