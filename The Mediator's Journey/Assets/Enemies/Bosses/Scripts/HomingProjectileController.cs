@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class HomingProjectileController : MonoBehaviour
@@ -17,6 +19,10 @@ public class HomingProjectileController : MonoBehaviour
     private float homingTimer;
     private bool isHoming = true;
 
+    private AudioSource launchAudio;
+    private AudioSource homingAudio;
+    private AudioSource impactAudio;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -32,7 +38,10 @@ public class HomingProjectileController : MonoBehaviour
         float projectileTurnSpeed,
         float projectileHomingDuration,
         float projectileMinDistance,
-        Transform targetTransform = null)
+        Transform targetTransform,
+        AudioSource launchAudio,
+        AudioSource homingAudio,
+        AudioSource impactAudio)
     {
         // Set all properties
         direction = initialDirection.normalized;
@@ -42,6 +51,9 @@ public class HomingProjectileController : MonoBehaviour
         homingDuration = projectileHomingDuration;
         minDistanceToHome = projectileMinDistance;
         target = targetTransform;
+        this.launchAudio = launchAudio;
+        this.homingAudio = homingAudio;
+        this.impactAudio = impactAudio;
 
         // Set initial rotation
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -51,6 +63,9 @@ public class HomingProjectileController : MonoBehaviour
         rb.velocity = direction * speed;
 
         homingTimer = homingDuration;
+
+        // Play launch audio
+        AudioSource.PlayClipAtPoint(launchAudio.clip, transform.position);
 
         Destroy(gameObject, lifetime);
     }
@@ -69,7 +84,13 @@ public class HomingProjectileController : MonoBehaviour
         if (homingTimer <= 0f)
         {
             isHoming = false;
+            homingAudio.Stop();
             return;
+        }
+
+        if (isHoming && !homingAudio.isPlaying)
+        {
+            homingAudio.Play();
         }
 
         // Calculate distance to target
@@ -77,6 +98,7 @@ public class HomingProjectileController : MonoBehaviour
         if (distanceToTarget < minDistanceToHome)
         {
             // Too close, stop homing to allow dodging
+            homingAudio.Stop();
             isHoming = false;
             return;
         }
@@ -103,12 +125,19 @@ public class HomingProjectileController : MonoBehaviour
         rb.velocity = direction * speed;
     }
 
+    private void OnDestroy()
+    {
+        launchAudio.Stop();
+        homingAudio.Stop();
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         var player = other.GetComponent<IPlayer>();
         if (player != null)
         {
             player.TakeDamage(damage);
+            impactAudio.Play();
             Destroy(gameObject);
         }
     }

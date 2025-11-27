@@ -1,7 +1,11 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class HomingProjectileAttackController : MonoBehaviour
 {
+    private static readonly int IsShooting = Animator.StringToHash("isShooting");
+
     [Header("Projectile Settings")] [SerializeField]
     private GameObject projectilePrefab;
 
@@ -23,16 +27,30 @@ public class HomingProjectileAttackController : MonoBehaviour
     [SerializeField] private float homingTurnSpeed = 120f;
     [SerializeField] private float homingDuration = 3f;
     [SerializeField] private float homingMinDistance = 0.5f;
+    
+    [SerializeField] private AudioSource shootAudio;
+    [SerializeField] private AudioSource homingAudio;
+    [SerializeField] private AudioSource impactAudio;
+    
+    private Animator _animator;
 
     private float lastAttackTime;
     public Transform target;
+
+    private void Start()
+    {
+        _animator = GetComponent<Animator>();
+    }
 
     public bool TryAttack()
     {
         if (target == null) return false;
         if (Time.time - lastAttackTime < attackCooldown) return false;
+        
+        
 
         lastAttackTime = Time.time;
+        _animator.SetTrigger(IsShooting);
 
         // Calculate direction to target
         Vector2 toTarget = (target.position - firePoint.position);
@@ -60,7 +78,10 @@ public class HomingProjectileAttackController : MonoBehaviour
                 homingTurnSpeed, // Turn speed
                 homingDuration, // Homing duration
                 homingMinDistance, // Minimum distance to stop homing
-                target // Target transform
+                target, // Target transform
+                shootAudio,
+                homingAudio,
+                impactAudio
             );
         }
         else
