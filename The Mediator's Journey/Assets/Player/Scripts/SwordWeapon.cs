@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 
 public class SwordWeapon : MonoBehaviour
 {
+    private NPC npc;//for dialogue
+
     [SerializeField] private float attackPower = 3f;
     [SerializeField] private LayerMask enemyMask; // assign in Inspector
 
@@ -19,10 +21,17 @@ public class SwordWeapon : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+        npc = GameObject.FindObjectOfType<NPC>();//for dialogue
     }
 
     public void Attack(InputAction.CallbackContext context)
     {
+        if (npc != null && npc.dialoguePanel.activeInHierarchy)
+        {
+            return;
+        }// for dialogue
+            
+
         if (context.performed && !IsAttacking)
         {
             IsAttacking = true;
