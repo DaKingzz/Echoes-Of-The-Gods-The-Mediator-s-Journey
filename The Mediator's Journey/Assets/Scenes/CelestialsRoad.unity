@@ -223,7 +223,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Book
   sprite: {fileID: 21300000, guid: 06153653e993e4a49aec94ece017b9f7, type: 3}
-  itemDescription: Book of Time
+  itemDescription: Book of Time - This book belongs to Time O'thy, the Gos of Time.
+    His book, which contains all his tasks, was stolen by Pestilence leaving Time
+    O'thy unable to help the world.
 --- !u!61 &50389503
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -968,6 +970,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 539021622085897686, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
+      propertyPath: dialoguePanel
+      value: 
+      objectReference: {fileID: 1363220035}
+    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 29.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 8.73
+      objectReference: {fileID: 0}
+    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -13
+      objectReference: {fileID: 0}
     - target: {fileID: 1667355852505398739, guid: 5fb7e0b860aa67b4090792c986cc5aaa, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.32324
@@ -1055,22 +1073,6 @@ PrefabInstance:
     - target: {fileID: 6930607670287102058, guid: 5fb7e0b860aa67b4090792c986cc5aaa, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.083
-      objectReference: {fileID: 0}
-    - target: {fileID: 539021622085897686, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
-      propertyPath: dialoguePanel
-      value: 
-      objectReference: {fileID: 1363220035}
-    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 29.4
-      objectReference: {fileID: 0}
-    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 8.73
-      objectReference: {fileID: 0}
-    - target: {fileID: 2760276953532863416, guid: 9101ee15e31d8c64db3f4840545249b1, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -13
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1164,6 +1166,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2679873179832421759, guid: 2fdf665499e36fe4c9a2c5f2ef4660cd, type: 3}
+      propertyPath: displayTime
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1667355852505398739, guid: 5fb7e0b860aa67b4090792c986cc5aaa, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.32324

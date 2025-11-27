@@ -1978,7 +1978,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Cat
   sprite: {fileID: 21300000, guid: 962ab339b31bd0c428970667ac069f59, type: 3}
-  itemDescription: Gravity Cat
+  itemDescription: Major Tom - He is the furry companion of Turminion the God of
+    Gravity. While Turminion was out, Pestilence opened the door of Turminion's house
+    letting Major Tom loose. With his cat missing, Turminion tried getting his cat
+    back by making the worlds gravity unstable.
 --- !u!50 &344579033
 Rigidbody2D:
   serializedVersion: 4
@@ -10728,6 +10731,111 @@ PolygonCollider2D:
       - {x: 0.8898506, y: 1.895422}
       - {x: -0.12456131, y: 3.0668983}
   m_UseDelaunayMesh: 0
+--- !u!1001 &1745832532
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895693700434337568, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8074780069677563193, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_Name
+      value: Limbo
+      objectReference: {fileID: 0}
+    - target: {fileID: 8166588291506457443, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: displayTime
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9111083372852646478, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e983245f1acdd0d45a553bf5bb0b0f62, type: 3}
 --- !u!1 &1760574958
 GameObject:
   m_ObjectHideFlags: 0
@@ -14300,3 +14408,4 @@ SceneRoots:
   - {fileID: 1548751000}
   - {fileID: 2035394309}
   - {fileID: 34957822}
+  - {fileID: 1745832532}
