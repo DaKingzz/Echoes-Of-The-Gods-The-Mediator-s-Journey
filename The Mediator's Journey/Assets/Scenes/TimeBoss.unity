@@ -830,6 +830,10 @@ PrefabInstance:
       propertyPath: projectilePrefab
       value: 
       objectReference: {fileID: 1157104776517915945, guid: 920bbf74134ad6f47a02a491107b7263, type: 3}
+    - target: {fileID: 2781627332423402574, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5284906105994159541, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.2
@@ -840,7 +844,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7348679887358573927, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: m_Name
-      value: GravityBoss
+      value: TimeBoss
       objectReference: {fileID: 0}
     - target: {fileID: 8934977482089251553, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: m_LocalPosition.x
