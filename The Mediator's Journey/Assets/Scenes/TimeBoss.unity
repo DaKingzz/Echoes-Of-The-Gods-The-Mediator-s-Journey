@@ -178,7 +178,7 @@ Transform:
   m_GameObject: {fileID: 257976884}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.64, y: -11.69, z: 0}
+  m_LocalPosition: {x: 17.64, y: -9.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -828,6 +828,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: speed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: maxHealth
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 2286060899648499038, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: waypoints.Array.size
       value: 6
       objectReference: {fileID: 0}
@@ -855,6 +867,14 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 740868419}
+    - target: {fileID: 2627987478323852493, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: projectileSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2627987478323852493, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
+      propertyPath: projectilePrefab
+      value: 
+      objectReference: {fileID: 1157104776517915945, guid: 920bbf74134ad6f47a02a491107b7263, type: 3}
     - target: {fileID: 5284906105994159541, guid: 5874010017acf7f48bd001c05e4cdd7f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.2
