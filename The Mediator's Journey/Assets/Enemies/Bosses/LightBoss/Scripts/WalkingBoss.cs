@@ -33,6 +33,17 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     [SerializeField]
     private GameObject damageAreaObject;
 
+    [Header("Arena Boundaries")]
+    [Tooltip("Left edge of the arena. Boss will stop retreating if it reaches this position.")]
+    [SerializeField]
+    private Transform leftEdge;
+
+    [Tooltip("Right edge of the arena. Boss will stop retreating if it reaches this position.")] [SerializeField]
+    private Transform rightEdge;
+
+    [Tooltip("Distance from edge to stop retreating (prevents getting stuck exactly at edge).")] [SerializeField]
+    private float edgeBuffer = 0.5f;
+
     [Header("Health")] [Tooltip("Maximum health of the boss.")] [SerializeField]
     private float maxHealth = 100f;
 
@@ -162,6 +173,16 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         if (damageAreaObject == null)
         {
             Debug.LogError("WalkingBoss: damageAreaObject is not assigned!", this);
+        }
+
+        if (leftEdge == null)
+        {
+            Debug.LogWarning("WalkingBoss: leftEdge is not assigned! Boss may get stuck at map edges.", this);
+        }
+
+        if (rightEdge == null)
+        {
+            Debug.LogWarning("WalkingBoss: rightEdge is not assigned! Boss may get stuck at map edges.", this);
         }
 
         // Set initial state
@@ -409,6 +430,14 @@ public class WalkingBoss : MonoBehaviour, IEnemy
             return;
         }
 
+        // Check if reached edge - stop retreating if we did
+        if (IsAtEdge())
+        {
+            rigidbody2D.velocity = Vector2.zero;
+            TransitionToState(BossState.Approaching);
+            return;
+        }
+
         // Perform additional retreat dashes if enough time has passed and dashes remaining
         if (retreatDashesRemaining > 0 && Time.time - lastRetreatDashTime >= retreatDashInterval && CanDash())
         {
@@ -433,6 +462,14 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
     private void ExecuteDashingState()
     {
+        // Check if reached edge during dash - stop immediately
+        if (IsAtEdge())
+        {
+            rigidbody2D.velocity = Vector2.zero;
+            TransitionToState(BossState.Approaching);
+            return;
+        }
+
         // Apply dash velocity
         rigidbody2D.velocity = dashDirection * dashSpeed;
 
@@ -473,7 +510,7 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         {
             damageAreaObject.SetActive(false);
         }
-        
+
         animator.SetBool(animatorHashIsDead, true);
     }
 
@@ -481,6 +518,40 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     {
         Debug.Log("WalkingBoss: Death animation complete. Boss defeated.");
         Destroy(gameObject);
+    }
+
+    #endregion
+
+    #region Edge Detection
+
+    /// <summary>
+    /// Checks if the boss has reached either edge of the arena
+    /// </summary>
+    private bool IsAtEdge()
+    {
+        float bossX = transform.position.x;
+
+        // Check left edge
+        if (leftEdge != null)
+        {
+            float leftEdgeX = leftEdge.position.x;
+            if (bossX <= leftEdgeX + edgeBuffer)
+            {
+                return true;
+            }
+        }
+
+        // Check right edge
+        if (rightEdge != null)
+        {
+            float rightEdgeX = rightEdge.position.x;
+            if (bossX >= rightEdgeX - edgeBuffer)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     #endregion
@@ -521,12 +592,41 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
         Vector2 directionAwayFromPlayer = -GetDirectionToPlayer();
 
+        // Check if moving away would hit edge - if so, stop
+        if (WouldHitEdge(directionAwayFromPlayer.x))
+        {
+            rigidbody2D.velocity = Vector2.zero;
+            return;
+        }
+
         // Apply movement away from player
         float currentMoveSpeed = GetCurrentMoveSpeed();
         rigidbody2D.velocity = new Vector2(directionAwayFromPlayer.x * currentMoveSpeed, rigidbody2D.velocity.y);
 
         // Update facing direction
         UpdateFacingDirection(directionAwayFromPlayer.x);
+    }
+
+    /// <summary>
+    /// Checks if moving in the given direction would hit an edge
+    /// </summary>
+    private bool WouldHitEdge(float direction)
+    {
+        float bossX = transform.position.x;
+
+        // Moving left
+        if (direction < 0 && leftEdge != null)
+        {
+            return bossX <= leftEdge.position.x + edgeBuffer;
+        }
+
+        // Moving right
+        if (direction > 0 && rightEdge != null)
+        {
+            return bossX >= rightEdge.position.x - edgeBuffer;
+        }
+
+        return false;
     }
 
     private void UpdateFacingDirection(float horizontalMovement)
@@ -595,6 +695,14 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
         // Calculate dash direction away from player
         Vector2 directionAwayFromPlayer = -GetDirectionToPlayer();
+
+        // Check if dashing would hit edge - if so, don't dash
+        if (WouldHitEdge(directionAwayFromPlayer.x))
+        {
+            retreatDashesRemaining--;
+            return;
+        }
+
         dashDirection = new Vector2(directionAwayFromPlayer.x, 0f).normalized;
 
         lastDashTime = Time.time;
@@ -808,6 +916,11 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
     #endregion
 
+    public void DeadAnimationEnd()
+    {
+        Destroy(gameObject);
+    }
+
     #region Debug Visualization
 
     private void OnDrawGizmosSelected()
@@ -817,6 +930,38 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, stoppingDistance);
+        }
+
+        // Visualize arena edges
+        if (leftEdge != null)
+        {
+            Gizmos.color = Color.red;
+            Vector3 leftPos = leftEdge.position;
+            Gizmos.DrawLine(leftPos + Vector3.up * 5f, leftPos + Vector3.down * 5f);
+            Gizmos.DrawWireSphere(leftPos, 0.3f);
+        }
+
+        if (rightEdge != null)
+        {
+            Gizmos.color = Color.red;
+            Vector3 rightPos = rightEdge.position;
+            Gizmos.DrawLine(rightPos + Vector3.up * 5f, rightPos + Vector3.down * 5f);
+            Gizmos.DrawWireSphere(rightPos, 0.3f);
+        }
+
+        // Visualize edge buffer zones
+        if (leftEdge != null)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Vector3 leftBufferPos = leftEdge.position + Vector3.right * edgeBuffer;
+            Gizmos.DrawLine(leftBufferPos + Vector3.up * 5f, leftBufferPos + Vector3.down * 5f);
+        }
+
+        if (rightEdge != null)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+            Vector3 rightBufferPos = rightEdge.position + Vector3.left * edgeBuffer;
+            Gizmos.DrawLine(rightBufferPos + Vector3.up * 5f, rightBufferPos + Vector3.down * 5f);
         }
     }
 
