@@ -1019,6 +1019,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: IcarusRoad
       objectReference: {fileID: 0}
+    - target: {fileID: 832178664107719970, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
+      propertyPath: m_text
+      value: Ikarus Road
+      objectReference: {fileID: 0}
     - target: {fileID: 7142414490813182369, guid: 08fb26ab318913e46835fe17228fbc11, type: 3}
       propertyPath: displayTime
       value: 3
