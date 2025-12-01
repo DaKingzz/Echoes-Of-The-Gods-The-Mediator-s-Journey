@@ -12,6 +12,9 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class WalkingBoss : MonoBehaviour, IEnemy
 {
+
+    public GameObject npcPrefab;
+
     private enum BossState
     {
         Idle,
@@ -518,6 +521,7 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     {
         Debug.Log("WalkingBoss: Death animation complete. Boss defeated.");
         Destroy(gameObject);
+        
     }
 
     #endregion
@@ -887,6 +891,11 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         {
             currentHealth = 0f;
             TransitionToState(BossState.Dead);
+
+            if (npcPrefab != null)
+            {
+                npcPrefab.SetActive(true);
+            }
             return true;
         }
 

@@ -13,6 +13,10 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
 public class BossMovement : MonoBehaviour, IEnemy
 {
+
+    //turn to npc
+    public GameObject npcPrefab;
+
     public enum MovementMode
     {
         Loop,
@@ -257,8 +261,12 @@ public class BossMovement : MonoBehaviour, IEnemy
             isDead = true;
             rb.velocity = Vector2.zero;
 
-            // Disable after a delay to allow death animation
-            Invoke(nameof(DisableBoss), 2f);
+            if (npcPrefab != null)
+            {
+                npcPrefab.SetActive(true);
+            }
+                // Disable after a delay to allow death animation
+                Invoke(nameof(DisableBoss), 2f);
             return true;
         }
 

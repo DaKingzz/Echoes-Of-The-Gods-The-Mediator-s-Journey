@@ -43,12 +43,13 @@ public class NPC : MonoBehaviour
             }
         }
 
+
         if (playerIsClose)
         {
             if (!prompt.activeInHierarchy)
             {
                 prompt.SetActive(true);
-                
+
             }
 
         }
