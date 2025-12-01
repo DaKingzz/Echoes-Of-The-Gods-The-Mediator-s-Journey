@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 {
     // Get Respawn Point Later
     public Transform playerRespawn;
-    
+
     private SpriteRenderer _spriteRenderer;
 
     //for dialogue
@@ -32,20 +32,21 @@ public class PlayerController : MonoBehaviour, IPlayer
         get => currentHealth;
         private set => currentHealth = Mathf.Max(0f, value);
     }
-    
-    [Header("Death Settings")]
-    [Tooltip("Audio clip to play when player dies")]
-    [SerializeField] private AudioSource deathSoundSource;
 
-    [Tooltip("Time it takes for health to drain to 0")]
-    [SerializeField] private float healthDrainDuration = 0.5f;
+    [Header("Death Settings")] [Tooltip("Audio clip to play when player dies")] [SerializeField]
+    private AudioSource deathSoundSource;
 
-    [Tooltip("Time it takes for health to refill after respawn")]
-    [SerializeField] private float healthRefillDuration = 1f;
+    [Tooltip("Time it takes for health to drain to 0")] [SerializeField]
+    private float healthDrainDuration = 0.5f;
 
-    [Tooltip("Delay before respawning after death")]
-    [SerializeField] private float respawnDelay = 1f;
+    [Tooltip("Time it takes for health to refill after respawn")] [SerializeField]
+    private float healthRefillDuration = 1f;
+
+    [Tooltip("Delay before respawning after death")] [SerializeField]
+    private float respawnDelay = 1f;
+
     private bool _isDead = false;
+
     #endregion
 
     #region Movement Configuration
@@ -350,6 +351,28 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #endregion
 
+    #region Collider
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            // Check if it's a wall (normal is mostly horizontal)
+            if (Mathf.Abs(contact.normal.x) > 0.9f && Mathf.Abs(contact.normal.y) < 0.1f)
+            {
+                // Player is touching a wall
+                if (!isGrounded)
+                {
+                    // Stop horizontal push so gravity can work
+                    rigidBody2D.velocity = new Vector2(0, -5f);
+                }
+            }
+        }
+    }
+
+    #endregion
+
+
     #region Airborne direction rules (core)
 
     private void InitializeAirborneDirectionOnJump()
@@ -496,7 +519,7 @@ public class PlayerController : MonoBehaviour, IPlayer
         {
             return;
         }
-        
+
         movementInput = context.ReadValue<Vector2>();
 
         if (movementInput.x > 0f && !isFacingRight) FlipFacingDirection();
@@ -511,6 +534,7 @@ public class PlayerController : MonoBehaviour, IPlayer
             jumpPressedThisFrame = false;
             return;
         }
+
         if (context.performed)
         {
             jumpPressedThisFrame = true;
@@ -535,7 +559,7 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (NPC.InDialogue) return;
 
         if (_isDead) return;
-        
+
         if (!context.performed || animator == null) return;
 
         if (Time.time - lastAttackTime < attackCooldown) return;
@@ -647,31 +671,31 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (currentHealth <= 0f)
             KillPlayer();
     }
-    
+
     /// <summary>
     /// Kills the player, sets hp to 0
     /// </summary>
     public void KillPlayer()
     {
         if (_isDead) return;
-    
+
         StartCoroutine(DeathSequence());
     }
-    
+
     private IEnumerator DeathSequence()
     {
         _isDead = true;
-        
+
         deathSoundSource.Play();
-    
+
         rigidBody2D.velocity = Vector2.zero;
         _spriteRenderer.enabled = false;
         movementInput = Vector2.zero;
-    
+
         // Gradually drain health to 0
         float startHealth = currentHealth;
         float elapsedTime = 0f;
-    
+
         while (elapsedTime < healthDrainDuration)
         {
             elapsedTime += Time.deltaTime;
@@ -679,12 +703,12 @@ public class PlayerController : MonoBehaviour, IPlayer
             currentHealth = Mathf.Lerp(startHealth, 0f, t);
             yield return null;
         }
-    
+
         currentHealth = 0f;
-    
+
         // Wait before respawning
         yield return new WaitForSeconds(respawnDelay);
-    
+
         // Respawn player
         if (playerRespawn != null)
         {
@@ -692,12 +716,12 @@ public class PlayerController : MonoBehaviour, IPlayer
             rigidBody2D.velocity = Vector2.zero; // Stop any momentum
             movementInput = Vector2.zero;
         }
-        
+
         _spriteRenderer.enabled = true;
-    
+
         // Gradually refill health
         elapsedTime = 0f;
-    
+
         while (elapsedTime < healthRefillDuration)
         {
             elapsedTime += Time.deltaTime;
@@ -705,10 +729,11 @@ public class PlayerController : MonoBehaviour, IPlayer
             currentHealth = Mathf.Lerp(0f, maximumHealth, t);
             yield return null;
         }
-    
+
         currentHealth = maximumHealth;
         _isDead = false;
     }
+
     #endregion
 
     #region Editor Debugging
@@ -739,6 +764,7 @@ public class PlayerController : MonoBehaviour, IPlayer
     #endregion
 
     #region Freeze PLayer (for dialogue purposes)
+
     public void FreezePlayer()
     {
         movementInput = Vector2.zero;
@@ -758,5 +784,6 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (footstepsSource != null && footstepsSource.isPlaying)
             footstepsSource.Stop();
     }
+
     #endregion
 }
