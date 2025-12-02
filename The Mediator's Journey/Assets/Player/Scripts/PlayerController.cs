@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour, IPlayer
 {
     // Get Respawn Point Later
     public Transform playerRespawn;
-    
+
     private SpriteRenderer _spriteRenderer;
 
     //for dialogue
@@ -32,20 +32,21 @@ public class PlayerController : MonoBehaviour, IPlayer
         get => currentHealth;
         private set => currentHealth = Mathf.Max(0f, value);
     }
-    
-    [Header("Death Settings")]
-    [Tooltip("Audio clip to play when player dies")]
-    [SerializeField] private AudioSource deathSoundSource;
 
-    [Tooltip("Time it takes for health to drain to 0")]
-    [SerializeField] private float healthDrainDuration = 0.5f;
+    [Header("Death Settings")] [Tooltip("Audio clip to play when player dies")] [SerializeField]
+    private AudioSource deathSoundSource;
 
-    [Tooltip("Time it takes for health to refill after respawn")]
-    [SerializeField] private float healthRefillDuration = 1f;
+    [Tooltip("Time it takes for health to drain to 0")] [SerializeField]
+    private float healthDrainDuration = 0.5f;
 
-    [Tooltip("Delay before respawning after death")]
-    [SerializeField] private float respawnDelay = 1f;
+    [Tooltip("Time it takes for health to refill after respawn")] [SerializeField]
+    private float healthRefillDuration = 1f;
+
+    [Tooltip("Delay before respawning after death")] [SerializeField]
+    private float respawnDelay = 1f;
+
     private bool _isDead = false;
+
     #endregion
 
     #region Movement Configuration
@@ -197,6 +198,8 @@ public class PlayerController : MonoBehaviour, IPlayer
     // once true (set when airborneForwardActive is exited by releasing input), player cannot re-enter airborneForward until landing
     private bool preventReenterAirForwardUntilLand = false;
 
+    private float airborneTime = 0f;
+
     #endregion
 
     #region Unity Lifecycle
@@ -277,6 +280,18 @@ public class PlayerController : MonoBehaviour, IPlayer
             jumpPressedThisFrame = false;
         }
 
+
+        // For handling stickyness with walls
+        if (!isGrounded)
+        {
+            airborneTime += Time.fixedDeltaTime;
+        }
+        else
+        {
+            airborneTime = 0f;
+        }
+
+
         if (isInJumpPhase) HandleAirborneDirectionRules();
 
         ApplySustainedJump(ref computedVelocity);
@@ -349,6 +364,40 @@ public class PlayerController : MonoBehaviour, IPlayer
     }
 
     #endregion
+
+    #region Collider
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            // Wall & edge logic (with airborne delay)
+            if (!isGrounded && airborneTime > 0.15f)
+            {
+                float angle = Vector2.Angle(contact.normal, Vector2.up);
+
+                if (angle > 75f) // Wall
+                {
+                    rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, -5f);
+                }
+                else if (angle < 30f) // Platform edge
+                {
+                    float pushDirection = contact.normal.x > 0 ? -1f : 1f;
+                    rigidBody2D.velocity = new Vector2(pushDirection * 3f, rigidBody2D.velocity.y - 1f);
+                }
+            }
+
+            // ✅ New: If standing on enemy layer, push down and sideways
+            if (((1 << collision.gameObject.layer) & enemyLayerMask) != 0 && contact.normal.y > 0.9f)
+            {
+                float pushDirection = transform.position.x < collision.transform.position.x ? -1f : 1f;
+                rigidBody2D.velocity = new Vector2(pushDirection * 2f, -5f);
+            }
+        }
+    }
+
+    #endregion
+
 
     #region Airborne direction rules (core)
 
@@ -496,7 +545,7 @@ public class PlayerController : MonoBehaviour, IPlayer
         {
             return;
         }
-        
+
         movementInput = context.ReadValue<Vector2>();
 
         if (movementInput.x > 0f && !isFacingRight) FlipFacingDirection();
@@ -511,6 +560,7 @@ public class PlayerController : MonoBehaviour, IPlayer
             jumpPressedThisFrame = false;
             return;
         }
+
         if (context.performed)
         {
             jumpPressedThisFrame = true;
@@ -535,7 +585,7 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (NPC.InDialogue) return;
 
         if (_isDead) return;
-        
+
         if (!context.performed || animator == null) return;
 
         if (Time.time - lastAttackTime < attackCooldown) return;
@@ -647,31 +697,31 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (currentHealth <= 0f)
             KillPlayer();
     }
-    
+
     /// <summary>
     /// Kills the player, sets hp to 0
     /// </summary>
     public void KillPlayer()
     {
         if (_isDead) return;
-    
+
         StartCoroutine(DeathSequence());
     }
-    
+
     private IEnumerator DeathSequence()
     {
         _isDead = true;
-        
+
         deathSoundSource.Play();
-    
+
         rigidBody2D.velocity = Vector2.zero;
         _spriteRenderer.enabled = false;
         movementInput = Vector2.zero;
-    
+
         // Gradually drain health to 0
         float startHealth = currentHealth;
         float elapsedTime = 0f;
-    
+
         while (elapsedTime < healthDrainDuration)
         {
             elapsedTime += Time.deltaTime;
@@ -679,12 +729,12 @@ public class PlayerController : MonoBehaviour, IPlayer
             currentHealth = Mathf.Lerp(startHealth, 0f, t);
             yield return null;
         }
-    
+
         currentHealth = 0f;
-    
+
         // Wait before respawning
         yield return new WaitForSeconds(respawnDelay);
-    
+
         // Respawn player
         if (playerRespawn != null)
         {
@@ -692,12 +742,12 @@ public class PlayerController : MonoBehaviour, IPlayer
             rigidBody2D.velocity = Vector2.zero; // Stop any momentum
             movementInput = Vector2.zero;
         }
-        
+
         _spriteRenderer.enabled = true;
-    
+
         // Gradually refill health
         elapsedTime = 0f;
-    
+
         while (elapsedTime < healthRefillDuration)
         {
             elapsedTime += Time.deltaTime;
@@ -705,10 +755,11 @@ public class PlayerController : MonoBehaviour, IPlayer
             currentHealth = Mathf.Lerp(0f, maximumHealth, t);
             yield return null;
         }
-    
+
         currentHealth = maximumHealth;
         _isDead = false;
     }
+
     #endregion
 
     #region Editor Debugging
@@ -739,6 +790,7 @@ public class PlayerController : MonoBehaviour, IPlayer
     #endregion
 
     #region Freeze PLayer (for dialogue purposes)
+
     public void FreezePlayer()
     {
         movementInput = Vector2.zero;
@@ -758,5 +810,6 @@ public class PlayerController : MonoBehaviour, IPlayer
         if (footstepsSource != null && footstepsSource.isPlaying)
             footstepsSource.Stop();
     }
+
     #endregion
 }
