@@ -1093,6 +1093,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: RoomRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 5027357332979422591, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 14.4160595
+      objectReference: {fileID: 0}
+    - target: {fileID: 5027357332979422591, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 25.799
+      objectReference: {fileID: 0}
     - target: {fileID: 5035862878652406787, guid: b814b5a703458144fa0485061a3b1e7e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.51
