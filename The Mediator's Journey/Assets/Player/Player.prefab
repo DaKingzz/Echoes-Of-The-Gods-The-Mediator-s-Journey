@@ -291,7 +291,7 @@ MonoBehaviour:
   baseGravityScale: 3
   fallGravityMultiplier: 4
   groundCheckPoint: {fileID: 7636177039945821606}
-  groundCheckRadius: 0.05
+  groundCheckRadius: 0.2
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 512

@@ -198,6 +198,8 @@ public class PlayerController : MonoBehaviour, IPlayer
     // once true (set when airborneForwardActive is exited by releasing input), player cannot re-enter airborneForward until landing
     private bool preventReenterAirForwardUntilLand = false;
 
+    private float airborneTime = 0f;
+
     #endregion
 
     #region Unity Lifecycle
@@ -278,6 +280,18 @@ public class PlayerController : MonoBehaviour, IPlayer
             jumpPressedThisFrame = false;
         }
 
+
+        // For handling stickyness with walls
+        if (!isGrounded)
+        {
+            airborneTime += Time.fixedDeltaTime;
+        }
+        else
+        {
+            airborneTime = 0f;
+        }
+
+
         if (isInJumpPhase) HandleAirborneDirectionRules();
 
         ApplySustainedJump(ref computedVelocity);
@@ -353,19 +367,31 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #region Collider
 
-    void OnCollisionStay2D(Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
         foreach (ContactPoint2D contact in collision.contacts)
         {
-            // Check if it's a wall (normal is mostly horizontal)
-            if (Mathf.Abs(contact.normal.x) > 0.9f && Mathf.Abs(contact.normal.y) < 0.1f)
+            // Wall & edge logic (with airborne delay)
+            if (!isGrounded && airborneTime > 0.15f)
             {
-                // Player is touching a wall
-                if (!isGrounded)
+                float angle = Vector2.Angle(contact.normal, Vector2.up);
+
+                if (angle > 75f) // Wall
                 {
-                    // Stop horizontal push so gravity can work
-                    rigidBody2D.velocity = new Vector2(0, -5f);
+                    rigidBody2D.velocity = new Vector2(rigidBody2D.velocity.x, -5f);
                 }
+                else if (angle < 30f) // Platform edge
+                {
+                    float pushDirection = contact.normal.x > 0 ? -1f : 1f;
+                    rigidBody2D.velocity = new Vector2(pushDirection * 3f, rigidBody2D.velocity.y - 1f);
+                }
+            }
+
+            // ✅ New: If standing on enemy layer, push down and sideways
+            if (((1 << collision.gameObject.layer) & enemyLayerMask) != 0 && contact.normal.y > 0.9f)
+            {
+                float pushDirection = transform.position.x < collision.transform.position.x ? -1f : 1f;
+                rigidBody2D.velocity = new Vector2(pushDirection * 2f, -5f);
             }
         }
     }
