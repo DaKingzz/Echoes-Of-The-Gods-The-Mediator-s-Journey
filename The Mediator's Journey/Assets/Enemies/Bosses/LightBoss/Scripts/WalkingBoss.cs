@@ -891,7 +891,7 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         Debug.Log($"WalkingBoss: Took {damage} damage. Current health: {currentHealth}/{maxHealth}");
 
         // Check if boss is killed
-        if (currentHealth <= 26f)
+        if (currentHealth <= 0f)
         {
             currentHealth = 0f;
             TransitionToState(BossState.Dead);

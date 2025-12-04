@@ -9420,6 +9420,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requiredKeyName: Boss Key
   destinationBossScene: FinalBoss
+  destinationSpawnName: FromTop
 --- !u!1 &1574471551
 GameObject:
   m_ObjectHideFlags: 0

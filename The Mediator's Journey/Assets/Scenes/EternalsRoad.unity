@@ -5763,6 +5763,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requiredKeyName: Book
   destinationBossScene: TimeBoss
+  destinationSpawnName: FromDown
 --- !u!1 &719112487
 GameObject:
   m_ObjectHideFlags: 0

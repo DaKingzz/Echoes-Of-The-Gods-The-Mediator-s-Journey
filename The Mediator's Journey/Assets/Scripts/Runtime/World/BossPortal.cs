@@ -5,6 +5,7 @@ public class BossPortal : MonoBehaviour
 {
     public string requiredKeyName;
     public string destinationBossScene;
+    public string destinationSpawnName;
     public bool IsPlayerTouching { get; private set; } = false;
 
 
@@ -26,6 +27,8 @@ public class BossPortal : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
+
+        PlayerSpawn.NextSpawnName = string.IsNullOrEmpty(destinationSpawnName) ? "FromLeft" : destinationSpawnName;
 
         bool isFinalBossPortal = (destinationBossScene == "FinalBoss");
 

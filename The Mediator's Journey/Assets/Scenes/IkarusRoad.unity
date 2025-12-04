@@ -1220,6 +1220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   requiredKeyName: Lamp
   destinationBossScene: LightBoss
+  destinationSpawnName: FromLeft
 --- !u!4 &5966605105862864603 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2329901790959573230, guid: ff62eb343742cc84587e0bf99849f57d, type: 3}
