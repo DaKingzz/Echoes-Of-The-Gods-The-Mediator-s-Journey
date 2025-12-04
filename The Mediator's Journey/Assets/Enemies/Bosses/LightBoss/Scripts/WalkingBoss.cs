@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// WalkingBoss
@@ -14,6 +15,8 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 {
 
     public GameObject npcPrefab;
+    public GameObject victoryCanvas;
+    public Dialogue finalBossDialogue;
 
     private enum BossState
     {
@@ -497,8 +500,6 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
     private void OnEnterDeadState()
     {
-        AchievementManager.Instance.MarkBossDefeated();
-
         // Stop all movement
         rigidbody2D.velocity = Vector2.zero;
         rigidbody2D.isKinematic = true;
@@ -890,14 +891,29 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         Debug.Log($"WalkingBoss: Took {damage} damage. Current health: {currentHealth}/{maxHealth}");
 
         // Check if boss is killed
-        if (currentHealth <= 0f)
+        if (currentHealth <= 26f)
         {
             currentHealth = 0f;
             TransitionToState(BossState.Dead);
+            if (AchievementManager.Instance != null)
+                AchievementManager.Instance.MarkBossDefeated();
 
             if (npcPrefab != null)
             {
                 npcPrefab.SetActive(true);
+
+                // Find the PersistentNPCDialogue in the scene (assuming only one)
+                if (finalBossDialogue != null)
+                {
+                    finalBossDialogue.OnDialogueFinished += () =>
+                    {
+                        // Only show victory if final boss
+                        if (SceneManager.GetActiveScene().name == "FinalBoss")
+                        {
+                            victoryCanvas.SetActive(true);
+                        }
+                    };
+                }
             }
             return true;
         }

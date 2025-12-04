@@ -69,7 +69,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7a0d6aa1a04510a47bd1f1bffbcd77a5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 013d8d8be7c63ad41a7dd509845d6fa4, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -120,14 +120,14 @@ RectTransform:
   m_GameObject: {fileID: 2275855980507767969}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.83184236, y: 0.83184236, z: 0.83184236}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 58829906121714411}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -10, y: -114}
+  m_AnchoredPosition: {x: 12, y: -101}
   m_SizeDelta: {x: 500, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5431191270951250505
@@ -469,7 +469,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -34, y: 262}
+  m_AnchoredPosition: {x: 21, y: 207}
   m_SizeDelta: {x: 600, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &188142181420921007
@@ -500,7 +500,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Victory!
+  m_text: Victory
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8317390f4ff59234d9d777df4af90e1a, type: 2}
   m_sharedMaterial: {fileID: 6607680837889502232, guid: 8317390f4ff59234d9d777df4af90e1a, type: 2}
@@ -514,10 +514,10 @@ MonoBehaviour:
   m_enableVertexGradient: 1
   m_colorMode: 1
   m_fontColorGradient:
-    topLeft: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
-    topRight: {r: 0.83333325, g: 1, b: 0.8387178, a: 1}
-    bottomLeft: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
-    bottomRight: {r: 0.83333325, g: 1, b: 0.8387178, a: 1}
+    topLeft: {r: 0.78616345, g: 0.78616345, b: 0.78616345, a: 1}
+    topRight: {r: 0.9811321, g: 0.68440086, b: 0.39800632, a: 1}
+    bottomLeft: {r: 0.78616345, g: 0.78616345, b: 0.78616345, a: 1}
+    bottomRight: {r: 0.9811321, g: 0.68440086, b: 0.39800632, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0

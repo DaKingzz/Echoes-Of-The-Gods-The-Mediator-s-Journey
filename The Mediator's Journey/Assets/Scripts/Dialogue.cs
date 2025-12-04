@@ -16,6 +16,8 @@ public class Dialogue : MonoBehaviour
     public NPC npc;
     public static bool InDialogue;
 
+    public System.Action OnDialogueFinished;
+
     private int index;
 
     // Start is called before the first frame update
@@ -90,6 +92,9 @@ public class Dialogue : MonoBehaviour
             {
                 swordWeapon.enabled = true;
             }
+
+            // Call the callback to notify boss
+            OnDialogueFinished?.Invoke();
 
         }
     }
