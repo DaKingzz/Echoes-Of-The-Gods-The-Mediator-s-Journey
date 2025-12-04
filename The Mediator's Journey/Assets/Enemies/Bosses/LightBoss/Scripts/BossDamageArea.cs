@@ -28,14 +28,6 @@ public class BossDamageArea : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if (walkingBoss != null)
-        {
-            walkingBoss.OnDamageAreaStay(collision);
-        }
-    }
-
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (walkingBoss != null)
