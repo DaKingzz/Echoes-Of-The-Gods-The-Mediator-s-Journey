@@ -28,21 +28,30 @@ public class BossPortal : MonoBehaviour
         if (!other.CompareTag("Player")) return;
 
         bool isFinalBossPortal = (destinationBossScene == "FinalBoss");
+
         if (isFinalBossPortal)
         {
-            if (AchievementManager.Instance.AllRequiredBossesDefeated() && InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
+            if (AchievementManager.Instance.AllRequiredBossesDefeated())
             {
-                LoadDestinationBossScene();
+                if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
+                {
+                    Debug.Log("Final boss unlocked!");
+                    LoadDestinationBossScene();
+                }
+                else
+                {
+                    IsPlayerTouching = true; 
+                    Debug.Log("Final boss portal ready. Use correct key.");
+                }
             }
             else
             {
-                Debug.Log("Boss defeated:" + AchievementManager.Instance.bossesDefeated);
                 Debug.Log("Final boss locked! Defeat all 3 bosses first!");
             }
-            return; 
+            return; // stop further logic for final boss
         }
 
-
+        // Normal bosses
         if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
         {
             LoadDestinationBossScene();
@@ -51,6 +60,7 @@ public class BossPortal : MonoBehaviour
         {
             IsPlayerTouching = true;
         }
+
         Debug.Log($"player touching portal: {IsPlayerTouching}");
     }
 
