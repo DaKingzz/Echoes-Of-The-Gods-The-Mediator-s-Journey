@@ -497,6 +497,8 @@ public class WalkingBoss : MonoBehaviour, IEnemy
 
     private void OnEnterDeadState()
     {
+        AchievementManager.Instance.MarkBossDefeated();
+
         // Stop all movement
         rigidbody2D.velocity = Vector2.zero;
         rigidbody2D.isKinematic = true;
@@ -520,6 +522,7 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     public void OnDeathAnimationComplete()
     {
         Debug.Log("WalkingBoss: Death animation complete. Boss defeated.");
+
         Destroy(gameObject);
         
     }

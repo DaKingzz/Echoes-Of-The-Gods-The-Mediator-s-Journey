@@ -21,13 +21,27 @@ public class BossPortal : MonoBehaviour
     public void UnlockPortal()
     {
         Debug.Log($"Portal unlocked using {requiredKeyName}!");
-        // Disable collider so player can just pass through
-        //GetComponent<Collider2D>().enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
+
+        bool isFinalBossPortal = (destinationBossScene == "FinalBoss");
+        if (isFinalBossPortal)
+        {
+            if (AchievementManager.Instance.AllRequiredBossesDefeated() && InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
+            {
+                LoadDestinationBossScene();
+            }
+            else
+            {
+                Debug.Log("Boss defeated:" + AchievementManager.Instance.bossesDefeated);
+                Debug.Log("Final boss locked! Defeat all 3 bosses first!");
+            }
+            return; 
+        }
+
 
         if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
         {
@@ -37,7 +51,7 @@ public class BossPortal : MonoBehaviour
         {
             IsPlayerTouching = true;
         }
-        Debug.Log($"player touching {IsPlayerTouching}");
+        Debug.Log($"player touching portal: {IsPlayerTouching}");
     }
 
     private void OnTriggerExit2D(Collider2D other)
