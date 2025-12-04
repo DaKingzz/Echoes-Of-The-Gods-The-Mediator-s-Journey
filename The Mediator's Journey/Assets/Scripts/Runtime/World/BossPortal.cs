@@ -75,6 +75,15 @@ public class BossPortal : MonoBehaviour
 
     public void LoadDestinationBossScene()
     {
-        SceneManager.LoadScene(destinationBossScene);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadScene(destinationBossScene);
+        }
+        else
+        {
+            Debug.LogWarning("GameManager not found, falling back to SceneManager.");
+            SceneManager.LoadScene(destinationBossScene, LoadSceneMode.Single);
+        }
+
     }
 }
