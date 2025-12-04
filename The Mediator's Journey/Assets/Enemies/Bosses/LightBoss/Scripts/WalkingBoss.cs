@@ -13,7 +13,6 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(Animator))]
 public class WalkingBoss : MonoBehaviour, IEnemy
 {
-
     public GameObject npcPrefab;
     public GameObject victoryCanvas;
     public Dialogue finalBossDialogue;
@@ -525,7 +524,6 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         Debug.Log("WalkingBoss: Death animation complete. Boss defeated.");
 
         Destroy(gameObject);
-        
     }
 
     #endregion
@@ -809,35 +807,6 @@ public class WalkingBoss : MonoBehaviour, IEnemy
         }
     }
 
-    public void OnDamageAreaStay(Collider2D collision)
-    {
-        // If damage dealing is enabled and player is in area, try to deal damage
-        if (!canDealDamage)
-        {
-            return;
-        }
-
-        if (!collision.CompareTag("Player"))
-        {
-            return;
-        }
-
-        // Check if we already hit this player during this attack
-        if (hitPlayersThisAttack.Contains(collision.gameObject))
-        {
-            return;
-        }
-
-        // Try to get IPlayer interface
-        IPlayer player = collision.GetComponent<IPlayer>();
-        if (player != null)
-        {
-            player.TakeDamage(attackDamage);
-            hitPlayersThisAttack.Add(collision.gameObject);
-            Debug.Log($"WalkingBoss: Dealt {attackDamage} damage to player.");
-        }
-    }
-
     public void OnDamageAreaExit(Collider2D collision)
     {
         // Check if player exited
@@ -859,6 +828,19 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     {
         canDealDamage = true;
         Debug.Log("WalkingBoss: Damage dealing enabled.");
+
+        if (!hitPlayersThisAttack.Contains(damageAreaObject))
+        {
+            // Check if player is in damage area
+            // Check what is inside the damage area
+            IPlayer player = IsPlayerInDamageArea();
+            if (player != null)
+            {
+                player.TakeDamage(attackDamage);
+                hitPlayersThisAttack.Add(damageAreaObject);
+                Debug.Log($"WalkingBoss: Dealt {attackDamage} damage to player.");
+            }
+        }
     }
 
     /// <summary>
@@ -915,6 +897,7 @@ public class WalkingBoss : MonoBehaviour, IEnemy
                     };
                 }
             }
+
             return true;
         }
 
@@ -943,6 +926,29 @@ public class WalkingBoss : MonoBehaviour, IEnemy
     }
 
     #endregion
+
+    private IPlayer IsPlayerInDamageArea()
+    {
+        if (damageAreaObject == null) return null;
+        Collider2D area = damageAreaObject.GetComponent<Collider2D>();
+        if (area == null) return null;
+
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.useTriggers = true;
+        // optional: filter.SetLayerMask(LayerMask.GetMask("Player"));
+
+        Collider2D[] results = new Collider2D[8];
+        int hits = area.OverlapCollider(filter, results);
+        for (int i = 0; i < hits; i++)
+        {
+            var col = results[i];
+            if (col == null) continue;
+            if (col.CompareTag("Player")) return col.GetComponentInParent<IPlayer>();
+            if (col.GetComponentInParent<IPlayer>() != null) return col.GetComponentInParent<IPlayer>();
+        }
+
+        return null;
+    }
 
     public void DeadAnimationEnd()
     {
