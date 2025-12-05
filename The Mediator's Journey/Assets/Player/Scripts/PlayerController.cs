@@ -156,6 +156,7 @@ public class PlayerController : MonoBehaviour, IPlayer
     private readonly HashSet<Collider2D> hitsThisSweep = new HashSet<Collider2D>();
     private readonly int animatorHashAttack = Animator.StringToHash("isAttacking");
     private float lastAttackTime = -Mathf.Infinity;
+    private static readonly Collider2D[] _overlapBuffer = new Collider2D[64];
 
     #endregion
 
@@ -650,37 +651,41 @@ public class PlayerController : MonoBehaviour, IPlayer
 
     #region Attack Sweep (immediate damage on input)
 
+
     private void DoAttackSweep()
     {
         hitsThisSweep.Clear();
 
-        Vector2 centre;
-        Vector2 size;
-        float angle = 0f;
-
-        if (damageArea is BoxCollider2D box)
+        if (damageArea == null)
         {
-            size = Vector2.Scale(box.size, box.transform.lossyScale);
-            centre = (Vector2)box.transform.position + box.offset;
-            angle = box.transform.eulerAngles.z;
-        }
-        else
-        {
-            Debug.LogError("PlayerController.DoAttackSweep: damageArea is not assigned or not a BoxCollider2D.");
+            Debug.LogError("PlayerController.DoAttackSweep: damageArea is not assigned.");
             return;
         }
 
-        Collider2D[] hits = Physics2D.OverlapBoxAll(centre, size, angle, enemyLayerMask);
-        foreach (var hit in hits)
+        // Configure what to detect
+        var filter = new ContactFilter2D
         {
+            useTriggers = true // set to false if you want to ignore triggers
+        };
+        filter.SetLayerMask(enemyLayerMask);
+
+        // Query using the collider's actual world pose/shape (offset, rotation, scale handled by Unity)
+        int hitCount = damageArea.OverlapCollider(filter, _overlapBuffer);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hit = _overlapBuffer[i];
             if (hit == null) continue;
             if (hitsThisSweep.Contains(hit)) continue;
+
             hitsThisSweep.Add(hit);
 
             var damageable = hit.GetComponent<IEnemy>();
-            if (damageable != null) damageable.TakeDamage(attackDamage);
-
-            if (stopAfterFirstHit) break;
+            if (damageable != null)
+            {
+                damageable.TakeDamage(attackDamage);
+                if (stopAfterFirstHit) break;
+            }
         }
     }
 
