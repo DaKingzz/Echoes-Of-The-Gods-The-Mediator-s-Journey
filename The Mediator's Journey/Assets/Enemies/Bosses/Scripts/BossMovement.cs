@@ -259,7 +259,10 @@ public class BossMovement : MonoBehaviour, IEnemy
 
             // Boss defeated
             isDead = true;
+            AchievementManager.Instance.MarkBossDefeated();
             rb.velocity = Vector2.zero;
+
+            // Add boss
 
             if (npcPrefab != null)
             {

@@ -5,6 +5,7 @@ public class BossPortal : MonoBehaviour
 {
     public string requiredKeyName;
     public string destinationBossScene;
+    public string destinationSpawnName;
     public bool IsPlayerTouching { get; private set; } = false;
 
 
@@ -21,14 +22,39 @@ public class BossPortal : MonoBehaviour
     public void UnlockPortal()
     {
         Debug.Log($"Portal unlocked using {requiredKeyName}!");
-        // Disable collider so player can just pass through
-        //GetComponent<Collider2D>().enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
 
+        PlayerSpawn.NextSpawnName = string.IsNullOrEmpty(destinationSpawnName) ? "FromLeft" : destinationSpawnName;
+
+        bool isFinalBossPortal = (destinationBossScene == "FinalBoss");
+
+        if (isFinalBossPortal)
+        {
+            if (AchievementManager.Instance.AllRequiredBossesDefeated())
+            {
+                if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
+                {
+                    Debug.Log("Final boss unlocked!");
+                    LoadDestinationBossScene();
+                }
+                else
+                {
+                    IsPlayerTouching = true; 
+                    Debug.Log("Final boss portal ready. Use correct key.");
+                }
+            }
+            else
+            {
+                Debug.Log("Final boss locked! Defeat all 3 bosses first!");
+            }
+            return; // stop further logic for final boss
+        }
+
+        // Normal bosses
         if (InventoryManager.Instance.IsKeyAlreadyUsed(requiredKeyName))
         {
             LoadDestinationBossScene();
@@ -37,7 +63,8 @@ public class BossPortal : MonoBehaviour
         {
             IsPlayerTouching = true;
         }
-        Debug.Log($"player touching {IsPlayerTouching}");
+
+        Debug.Log($"player touching portal: {IsPlayerTouching}");
     }
 
     private void OnTriggerExit2D(Collider2D other)
@@ -48,6 +75,15 @@ public class BossPortal : MonoBehaviour
 
     public void LoadDestinationBossScene()
     {
-        SceneManager.LoadScene(destinationBossScene);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadScene(destinationBossScene);
+        }
+        else
+        {
+            Debug.LogWarning("GameManager not found, falling back to SceneManager.");
+            SceneManager.LoadScene(destinationBossScene, LoadSceneMode.Single);
+        }
+
     }
 }
