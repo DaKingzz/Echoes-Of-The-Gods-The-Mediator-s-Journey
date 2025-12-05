@@ -946,6 +946,14 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 501930433}
+    - target: {fileID: 4994818979622697296, guid: 3f97100810140a64d8f3ff59a358e7c2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 33.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994818979622697296, guid: 3f97100810140a64d8f3ff59a358e7c2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.52
+      objectReference: {fileID: 0}
     - target: {fileID: 8067170157732355693, guid: 3f97100810140a64d8f3ff59a358e7c2, type: 3}
       propertyPath: m_Name
       value: LightBoss
