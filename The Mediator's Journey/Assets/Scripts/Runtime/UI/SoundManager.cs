@@ -92,6 +92,7 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+
     private IEnumerator CrossfadeLoop()
     {
         AudioClip clip = gameMusic;
@@ -99,30 +100,27 @@ public class SoundManager : MonoBehaviour
 
         while (true)
         {
-            // Wait until near the end of the clip
             float fade = Mathf.Clamp(crossfadeSeconds, 0.1f, clip.length / 2f);
             yield return new WaitForSeconds(clip.length - fade);
 
-            // Start fading out and restart from beginning
-            float t = 0f;
-            float originalVolume = musicSource.volume;
-
-            // Play from start on a second AudioSource (temporary)
+            // Prepare second source
             AudioSource tempSource = gameObject.AddComponent<AudioSource>();
             tempSource.clip = clip;
             tempSource.volume = 0f;
             tempSource.Play();
 
+            float t = 0f;
             while (t < fade)
             {
                 t += Time.deltaTime;
                 float k = Mathf.Clamp01(t / fade);
-                musicSource.volume = Mathf.Sqrt(1f - k); // equal-power fade out
-                tempSource.volume = Mathf.Sqrt(k); // equal-power fade in
+                musicSource.volume = Mathf.Sqrt(1f - k);
+                tempSource.volume = Mathf.Sqrt(k);
                 yield return null;
             }
 
-            // Swap: destroy old source, keep new one
+            // Instead of destroying, swap references
+            musicSource.Stop();
             Destroy(musicSource);
             musicSource = tempSource;
         }
